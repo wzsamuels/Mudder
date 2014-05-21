@@ -760,6 +760,9 @@ namespace Yam
             if (currentWorld.Disconnect())
             {
                 mudOutputText.AppendText("\nDisconnected from world", Brushes.Gold);
+
+                disconnectWorldMenuItem.IsEnabled = false;
+                reconnectWorldMenuItem.IsEnabled = false;
             }
             else
             {
