@@ -1,6 +1,6 @@
-Yam by W. Z.  Samuels
+YAM by W. Z.  Samuels
 
-Yam is MUD client written in C# and using .NET for the UI. Yam is designed to 
+YAM (YAM is Almost a MUD client) is MUD client written in C# and using .NET for the UI. Yam is designed to 
 be primarily used on social MUD's, but it ought to be, powerful enough for 
 RPG MUD's if desired.
 
