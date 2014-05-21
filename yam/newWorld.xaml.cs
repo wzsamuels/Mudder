@@ -203,10 +203,10 @@ namespace Yam
                 }
                 else
                 {
+                    _ui.AutoLogin = autoLogin;
                     newWorldSelect = true;
                     CloseWindow();
-                }
-                _ui.AutoLogin = autoLogin;
+                }                
             }
             else
             {
