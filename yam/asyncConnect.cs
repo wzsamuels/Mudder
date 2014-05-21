@@ -84,15 +84,19 @@ namespace Yam
                    client.BeginConnect(worldName, Port,
                        new AsyncCallback(ConnectCallback), client);
                    connectDone.WaitOne();
+               }
+               if (client.Connected)
+               {
                    return true;
                }
                else
-                return false;
+               {
+                   return false;
+               }
            }
            catch (Exception e)
            {
                //MessageBoxResult result = MessageBox.Show("Do you want to close this window?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
-               MessageBox.Show(e.ToString());
                return false;
            }
        }
@@ -111,7 +115,7 @@ namespace Yam
            }
            catch (Exception e)
            {
-               MessageBox.Show(e.ToString());
+               throw e;
            }
        }
 

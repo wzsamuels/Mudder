@@ -79,6 +79,9 @@ namespace Yam
             mudOutputText.IsReadOnly = true;            
             mudOutputText.IsDocumentEnabled = true;
 
+            disconnectWorldMenuItem.IsEnabled = false;
+            reconnectWorldMenuItem.IsEnabled = false;
+
             _readTimer = new System.Timers.Timer(10); //For getting data from world
             _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);                     
             
@@ -597,49 +600,57 @@ namespace Yam
             {
                 currentWorld = new asyncConnect();
                 mudOutputText.AppendText("\nConnecting...", Brushes.Gold);
-
-                currentWorld.ConnectWorld(world.WorldURL, world.WorldPort);
-                mudOutputText.AppendText("\nConnected!", Brushes.Gold);
-
-
-                this.Title = "YAM - " + world.WorldName;
-
-
-                IPHostEntry Host = Dns.GetHostEntry(world.WorldURL);
-                string ipAddress = String.Empty;
-                for (int i = 0; i < Host.AddressList.Length; i++)
+                
+                if (currentWorld.ConnectWorld(world.WorldURL, world.WorldPort))
                 {
-                    ipAddress += Host.AddressList[i].ToString();
-                    if (i != Host.AddressList.Length - 1)
-                        ipAddress += ", ";
+                    mudOutputText.AppendText("\nConnected!", Brushes.Gold);
+
+                    this.Title = "YAM - " + world.WorldName;
+
+                    IPHostEntry Host = Dns.GetHostEntry(world.WorldURL);
+                    string ipAddress = String.Empty;
+                    for (int i = 0; i < Host.AddressList.Length; i++)
+                    {
+                        ipAddress += Host.AddressList[i].ToString();
+                        if (i != Host.AddressList.Length - 1)
+                            ipAddress += ", ";
+                    }
+
+                    worldURLText = world.WorldURL + " (" + ipAddress
+                        + ") at port " + world.WorldPort;
+
+                    if (world.AutoLogin)
+                    {
+                        try
+                        {
+                            string loginString = String.Empty;
+
+                            loginString = "connect " + world.Username + " " +
+                                world.Password + "\n";
+
+                            currentWorld.writeToWorld(loginString);
+
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            //If no login info is saved, don't do anything    
+                        }
+                        catch (Exception)
+                        {
+                            MessageBox.Show("Loading login info error");
+                        }
+                    }
+                    //Enable timer that reads from world
+                    reconnectWorldMenuItem.IsEnabled = true;
+                    disconnectWorldMenuItem.IsEnabled = true;
+                    _readTimer.Enabled = true;
                 }
-
-                worldURLText = world.WorldURL + " (" + ipAddress
-                    + ") at port " + world.WorldPort;
-
-                if (currentWorldInfo.AutoLogin)
+                else
                 {
-                    try
-                    {
-                        string loginString = String.Empty;
-
-                        loginString = "connect " + currentWorldInfo.Username + " " +
-                            currentWorldInfo.Password + "\n";
-
-                        currentWorld.writeToWorld(loginString);
-
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        //If no login info is saved, don't do anything    
-                    }
-                    catch (Exception)
-                    {
-                        MessageBox.Show("Loading login info error");
-                    }
+                    string temp = "\nError connecting to " + world.WorldName +
+                        " at " + world.WorldURL + " at port " + world.WorldPort;
+                    mudOutputText.AppendText(temp, Brushes.Gold);
                 }
-                //Enable timer that reads from world
-                _readTimer.Enabled = true;
             }
             else
                 mudOutputText.AppendText("\nAlready connected to a world", Brushes.Gold);
