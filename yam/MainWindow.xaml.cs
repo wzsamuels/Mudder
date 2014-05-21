@@ -60,7 +60,7 @@ namespace Yam
         private Dictionary<Brush, bool> colorsUsed;
         private WorldInfo currentWorldInfo = new WorldInfo();
         private Brush defaultColor;
-
+        private const string configFile = "world_data";
         //Timer to read from open world
         private readonly System.Timers.Timer _readTimer;
         
@@ -78,7 +78,6 @@ namespace Yam
 
             mudOutputText.IsReadOnly = true;            
             mudOutputText.IsDocumentEnabled = true;
-            saveWorldMenuItem.IsEnabled = false;
 
             _readTimer = new System.Timers.Timer(10); //For getting data from world
             _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);                     
@@ -324,10 +323,7 @@ namespace Yam
             //Use newPara and newSpan for buffering
             Paragraph newPara = new Paragraph();
             Span newSpan = new Span();
-
-            
-//            newPara.FontSize = 16;
-  //          newPara.LineHeight = FontSize;        
+       
             newPara.FontSize = mudOutputText.Document.FontSize; 
             newPara.LineHeight = mudOutputText.Document.FontSize + 4;
 
@@ -348,7 +344,6 @@ namespace Yam
                         {
                             linktext = linktext.Remove(index, 1);
                             //linktext = linktext.Insert(index, "\n");
-
                         }
 
                         index = linktext.LastIndexOf("\r");
@@ -622,39 +617,28 @@ namespace Yam
                 worldURLText = world.WorldURL + " (" + ipAddress
                     + ") at port " + world.WorldPort;
 
-                //Enable timer that reads from world
-
-                string filename = world.WorldName;
-                try
+                if (currentWorldInfo.AutoLogin)
                 {
-                    using (StreamReader sr = File.OpenText(filename))
+                    try
                     {
-                        currentWorldInfo.WorldName = sr.ReadLine();
-                        currentWorldInfo.WorldURL = sr.ReadLine();
-                        currentWorldInfo.WorldPort = Convert.ToInt32(sr.ReadLine());
-                        currentWorldInfo.Username = sr.ReadLine();
-                        currentWorldInfo.Password = sr.ReadLine();
-
                         string loginString = String.Empty;
 
                         loginString = "connect " + currentWorldInfo.Username + " " +
                             currentWorldInfo.Password + "\n";
-                        MessageBox.Show(loginString);
 
                         currentWorld.writeToWorld(loginString);
 
-                        sr.Close();
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        //If no login info is saved, don't do anything    
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("Loading login info error");
                     }
                 }
-                catch (FileNotFoundException)
-                {
-                    //If no login info is saved, don't do anything    
-                }
-                catch(Exception)
-                {
-                    MessageBox.Show("Loading login info error");
-                }               
-
+                //Enable timer that reads from world
                 _readTimer.Enabled = true;
             }
             else
@@ -681,90 +665,41 @@ namespace Yam
             {
                 if (window.newWorldSelect)
                 {
-                    currentWorldInfo.WorldName = window.WorldInfo.WorldName;
-                    currentWorldInfo.WorldURL = window.WorldInfo.WorldURL;
-                    currentWorldInfo.WorldPort = window.WorldInfo.WorldPort;
+                    currentWorldInfo = window.WorldInfo;
+                    if (window.saveLogin)
+                    {
+                        WorldInfo tempWorld = new WorldInfo();
+                        tempWorld = window.WorldInfo;
+                        try
+                        {
+                            WriteWorld(tempWorld);
+                        }
+                        catch
+                        {
+             //               MessageBox.Show("Saving world failed");
+                        }
+                    }
                 }
                 else
                 {
+                    
                     string path = window.worldList.SelectedValue.ToString();
                     string[] temparray = path.Split(' ');
-                    /*
-                    using (StreamReader sr = File.OpenText(temparray[1]))
+                  
+                    WorldInfo tempWorld = ReadWorld();                   
+                    if (temparray[1] == tempWorld.WorldName)
                     {
-                        currentWorldInfo.WorldName = sr.ReadLine();
-                        currentWorldInfo.WorldURL = sr.ReadLine();
-                        currentWorldInfo.WorldPort = Convert.ToInt32(sr.ReadLine());
-                    }
-                     */
-                    if (temparray[1] == "ifMUD")
-                    {
-                        currentWorldInfo.WorldName = "ifMUD";
-                        currentWorldInfo.WorldURL = "ifmud.port4000.com";
-                        currentWorldInfo.WorldPort = 4000;                     
-                    }
-
-                }                
+                        currentWorldInfo = tempWorld;
+                    }                   
+                }                                
+               
                 connectToWorld(currentWorldInfo);
-                if (window.autoLogin)
-                {
-                    string loginString = String.Empty;
-
-                    currentWorldInfo.Username = window.WorldInfo.Username;
-                    currentWorldInfo.Password = window.WorldInfo.Password;
-
-                    loginString = "connect " + window.WorldInfo.Username + " " +
-                        window.WorldInfo.Password + "\n";
-                    MessageBox.Show(loginString);
-
-                    currentWorld.writeToWorld(loginString);
-                }
-                if (window.saveLogin)
-                {
-                    currentWorldInfo.Username = window.WorldInfo.Username;
-                    currentWorldInfo.Password = window.WorldInfo.Password;
-                    string filename = currentWorldInfo.WorldName;
-                    try
-                    {
-                        using (StreamWriter sw = File.CreateText(filename))
-                        {
-                            sw.WriteLine(currentWorldInfo.WorldName.ToString());
-                            sw.WriteLine(currentWorldInfo.WorldURL.ToString());
-                            sw.WriteLine(currentWorldInfo.WorldPort.ToString());
-                            sw.WriteLine(currentWorldInfo.Username.ToString());
-                            sw.WriteLine(currentWorldInfo.Password.ToString());
-
-                            sw.Close();
-                        }
-                        
-                    }
-                    catch
-                    {
-                        MessageBox.Show("Saving world failed");
-                    }
-                }
             }
         }
+        
         private void saveWorldMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not yet implemented");
-            /*
-            string filename = currentWorldInfo.WorldName;
-            try
-            {
-                using (StreamWriter sw = File.CreateText(filename))
-                {
-                    sw.WriteLine(currentWorldInfo.WorldName.ToString());
-                    sw.WriteLine(currentWorldInfo.WorldURL.ToString());
-                    sw.WriteLine(currentWorldInfo.WorldPort.ToString());
-                }
-            }
-            catch
-            {
-
-            }
-             */ 
-
+            WriteWorld(currentWorldInfo);
         }
         private void reconnectMenuItem_Click(object sender, EventArgs e)
         {
@@ -861,6 +796,51 @@ namespace Yam
             box.Show();
         }
         #endregion
+
+        public void WriteWorld(WorldInfo data)
+        {
+            System.Xml.Serialization.XmlSerializer writer =
+                 new System.Xml.Serialization.XmlSerializer(data.GetType());
+            System.IO.StreamWriter file =
+               new System.IO.StreamWriter(configFile);
+
+            writer.Serialize(file, data);
+            file.Close();
+        }
+
+        public WorldInfo ReadWorld()
+        {
+            WorldInfo data = new WorldInfo();
+
+            System.Xml.Serialization.XmlSerializer reader = new
+                System.Xml.Serialization.XmlSerializer(data.GetType());
+
+            // Read the XML file.
+            System.IO.StreamReader file =
+                   new System.IO.StreamReader(Stream.Null);
+            try
+            {
+                file = new System.IO.StreamReader(configFile);
+            }
+            catch (Exception)
+            {
+               // MessageBox.Show("Error reading world");
+            }
+
+            // Deserialize the content of the file 
+            try
+            {
+                data = (WorldInfo)reader.Deserialize(file);
+            }
+            catch (Exception)
+            {
+
+            }
+
+            file.Close();
+
+            return data;
+        }
     }
 }
 

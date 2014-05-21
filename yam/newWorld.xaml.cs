@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Collections.ObjectModel;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -22,9 +24,7 @@ namespace Yam
         public newWorld()
         {
             InitializeComponent();
-            savedWorldButton.IsChecked = true;
-            worldList.SelectedItem = ifMUD;
-            worldList.Focus();
+            
 
             //Set up UI defaults
 
@@ -32,6 +32,32 @@ namespace Yam
             passwordText.IsEnabled = false;
             usernameBlock.Foreground = Brushes.Gray;
             passwordBlock.Foreground = Brushes.Gray;
+
+            //Load saved worlds
+
+            WorldInfo tempWorld = ReadWorld();
+            if (tempWorld.WorldName != String.Empty)
+            {
+                ListBoxItem world = new ListBoxItem();
+                world.Content = tempWorld.WorldName;
+                world.Name = tempWorld.WorldName;
+                ObservableCollection<ListBoxItem> oc = new ObservableCollection<ListBoxItem>();
+                oc.Add(world);
+                worldList.ItemsSource = oc;
+            }
+            
+            if (worldList.Items.Count > 0)
+            {
+                worldList.SelectedIndex = 0;
+                savedWorldButton.IsChecked = true;
+                worldList.Focus();
+            }
+            else
+            {
+                newWorldButton.IsChecked = true;
+                worldNameText.Focus();
+            }
+
         }
 
         WorldInfo _ui = new WorldInfo();
@@ -163,18 +189,28 @@ namespace Yam
                     newWorldSelect = true;
                     CloseWindow();
                 }
+                _ui.AutoLogin = autoLogin;
             }
             else
             {
-                newWorldSelect = false;
-                CloseWindow();
+                if (worldList.SelectedValue != null)
+                {
+                    newWorldSelect = false;
+                    CloseWindow();
+                }
+                else
+                {
+                    this.DialogResult = false;
+                    this.Close();
+                }
+                
             }
             if (autoLogin)
             {
                 _ui.Username = usernameText.Text.Trim();
-                _ui.Password = passwordText.Text.Trim();
-                
+                _ui.Password = passwordText.Text.Trim();                
             }
+            
         }
         private void cancelNewWorldButton_Click(object sender, EventArgs e)
         {
@@ -183,8 +219,55 @@ namespace Yam
         }
         private void CloseWindow()
         {
+           
             this.DialogResult = true;
+
             this.Close();
+        }
+        private const string configFile = "world_data";
+        public void WriteWorld(WorldInfo data)
+        {
+            System.Xml.Serialization.XmlSerializer writer =
+                 new System.Xml.Serialization.XmlSerializer(data.GetType());
+            System.IO.StreamWriter file =
+               new System.IO.StreamWriter(configFile);
+
+            writer.Serialize(file, data);
+            file.Close();
+        }
+
+        public WorldInfo ReadWorld()
+        {
+            WorldInfo data = new WorldInfo();
+
+            System.Xml.Serialization.XmlSerializer reader = new
+                System.Xml.Serialization.XmlSerializer(data.GetType());
+
+            // Read the XML file.
+            System.IO.StreamReader file =
+                   new System.IO.StreamReader(Stream.Null);
+            try
+            {
+                file = new System.IO.StreamReader(configFile);
+            }
+            catch (Exception)
+            {
+
+            }
+
+            // Deserialize the content of the file 
+            try
+            {
+                data = (WorldInfo)reader.Deserialize(file);
+            }
+            catch (Exception)
+            {
+
+            }
+
+            file.Close();
+
+            return data;
         }
     }
 }
