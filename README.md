@@ -1,22 +1,14 @@
 YAM by W. Z.  Samuels
 
-YAM (YAM is Almost a MUD client) is MUD client written in C# and using .NET for the UI. Yam is designed to 
-be primarily used on social MUD's, but it ought to be, powerful enough for 
-RPG MUD's if desired.
+YAM (YAM is Almost a MUD client) is MUD client written in C# and using .NET. Yam is designed to 
+be primarily used on social MUD's, but ideally it should be powerful enough for any purpose.
 
 Executables can be found at yam/yam/bin/Debug
 
 Features not yet working:
    Edit Menu -> Find doesn't do anything yet.
    Only one world can be saved at a time. Saving a new world will overwrite
-   the world one.
-
-The author recommends using the DejaVu Sans Mono font available at:
-http://dejavu-fonts.org/wiki/Download 
-The author is also fully aware that he may not have the best taste in fonts. 
-This font will be used by default if installed, otherwise the default font will 
-be Courier New. The font can be changed to any installed font by selecting 
-Tools -> Change Font from the menu bar.
+   the previously saved world.
 
 
 Copyright 2014 W. Z. Samuels
