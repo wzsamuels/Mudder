@@ -4,7 +4,7 @@ YAM (YAM is Almost a MUD client) is MUD client written in C# and using .NET for 
 be primarily used on social MUD's, but it ought to be, powerful enough for 
 RPG MUD's if desired.
 
-yam.exe can be found at yam/yam/bin/Debug
+Executables can be found at yam/yam/bin/Debug
 
 Features not yet working:
    Edit Menu -> Find doesn't do anything yet.
