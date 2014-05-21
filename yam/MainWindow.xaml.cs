@@ -70,7 +70,7 @@ namespace Yam
         {
             InitializeComponent();
 
-            this.Title = "Yam";
+            this.Title = "YAM";
             this.DataContext = this; //So variables can bind to UI
 
             userInputText.Focus();
@@ -602,7 +602,7 @@ namespace Yam
                 mudOutputText.AppendText("\nConnected!", Brushes.Gold);
 
 
-                this.Title = "Yam - " + world.WorldName;
+                this.Title = "YAM - " + world.WorldName;
 
 
                 IPHostEntry Host = Dns.GetHostEntry(world.WorldURL);
