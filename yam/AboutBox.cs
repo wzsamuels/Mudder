@@ -107,5 +107,10 @@ namespace Yam
         {
             this.Close();
         }
+
+        private void labelCopyright_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
