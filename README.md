@@ -3,7 +3,7 @@ YAM by W. Z.  Samuels
 YAM (YAM is Almost a MUD client) is MUD client written in C# and using .NET. YAM is designed to 
 be primarily used for social MUD's, but ideally it should be powerful enough for any purpose.
 
-Executables can be found at yam/yam/bin/Debug
+Latest stable binaries can be found at: http://plover.net/~borowski/yam.zip
 
 Features not yet working:
    Edit Menu -> Find doesn't do anything yet.
