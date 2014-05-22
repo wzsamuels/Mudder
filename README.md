@@ -11,6 +11,9 @@ Features not yet working:
    the previously saved world.
 
 
+The author recommends using the DejaVu Sans Mono font available at:
+http://dejavu-fonts.org/wiki/Download 
+
 Copyright 2014 W. Z. Samuels
 
 Licensed under the Apache License, Version 2.0 (the "License");
