@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -124,9 +125,10 @@ namespace Yam
            StringBuilder myCompleteMessage = new StringBuilder();
            //byte[] myReadBuffer = new byte[4096];
            byte[] myReadBuffer = new byte[1024];
-
+           string stringBuffer = String.Empty;
            int numberOfBytesRead = 0;
            NetworkStream stream = client.GetStream();
+          
            try
            {
 

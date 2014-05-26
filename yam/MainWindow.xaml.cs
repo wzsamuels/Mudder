@@ -22,6 +22,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 //using System.Drawing;
+//using Xceed.Wpf.Toolkit;
 using System.Linq;
 using System.IO;
 using System.Net;
@@ -52,17 +53,66 @@ namespace Yam
     public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     {
         #region Private variables
-        private asyncConnect currentWorld = new asyncConnect();
-
-        //Variables for channel coloring
-        private bool first_loop = true; 
-        private List<ColoredText> channelList = new List<ColoredText>();
-        private Dictionary<Brush, bool> colorsUsed;
+        private asyncConnect currentWorld = new asyncConnect();       
         private WorldInfo currentWorldInfo = new WorldInfo();
-        private Brush defaultColor;
+        public static RoutedCommand openWorldCommand = new RoutedCommand();
+        
         private const string configFile = "world_data";
         //Timer to read from open world
         private readonly System.Timers.Timer _readTimer;
+
+
+        //Drawing the output RTB
+        List<string> mudBufferGlobal = new List<string>();
+        private bool _displayUpdatePending = false;
+
+        //Variables for channel coloring
+        private List<ColoredText> channelList = new List<ColoredText>();
+        private Dictionary<Brush, bool> colorsUsed;
+        private Brush defaultColor;
+        private bool first_loop = true;
+
+        //Info vars bound to status bar
+
+        public double numLines = 0;  //TODO: Remove this
+        private double _numLinesText = 0;
+        private string _worldURLText = "Not connected";
+
+        public string worldURLText
+        {
+            get { return _worldURLText; }
+            set
+            {
+                _worldURLText = value;
+                //Notify the binding that the value has changed.
+                this.OnPropertyChanged("worldURLText");
+            }
+        }
+        public double numLinesText
+        {
+            get { return _numLinesText; }
+            set
+            {
+                _numLinesText = value;
+                //Notify the binding that the value has changed.
+                this.OnPropertyChanged("numLinesText");
+            }
+        }
+
+        // Text and its color
+        public struct ColoredText
+        {
+            public string text;
+            public Brush colorName;
+
+        }
+        struct FormattedText
+        {
+            public string text;
+            public Brush color;
+            public FontWeight weight;
+            public bool isLink;
+        }
         
         #endregion        
 
@@ -76,13 +126,14 @@ namespace Yam
             userInputText.Focus();
             userInputText.Clear();
 
-            mudOutputText.IsReadOnly = true;            
-            mudOutputText.IsDocumentEnabled = true;
+//            mudOutputText.IsReadOnly = true;            
+  //          mudOutputText.IsDocumentEnabled = true;
 
             disconnectWorldMenuItem.IsEnabled = false;
             reconnectWorldMenuItem.IsEnabled = false;
 
-            _readTimer = new System.Timers.Timer(10); //For getting data from world
+            //For getting data from world
+            _readTimer = new System.Timers.Timer(10); 
             _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);                     
             
             //Set up the colors used for channel name coloring
@@ -91,17 +142,26 @@ namespace Yam
             defaultColor = (Brush)bc.ConvertFromString("#BEBEBE");
 
             colorsUsed = new Dictionary<Brush, bool>();
-            colorsUsed.Add(Brushes.Red, false);
-            colorsUsed.Add(Brushes.Moccasin, false);
-            colorsUsed.Add(Brushes.LightBlue, false);
-            colorsUsed.Add(Brushes.Teal, false);
+            colorsUsed.Add(Brushes.Maroon, false);
+            colorsUsed.Add(Brushes.Ivory, false);
+            //colorsUsed.Add(Brushes.Aquamarine, false);
+            //colorsUsed.Add(Brushes.Aqua, false);
+            colorsUsed.Add(Brushes.Aqua, false);
             colorsUsed.Add(Brushes.Orange, false);
             colorsUsed.Add(Brushes.Yellow, false);
-            colorsUsed.Add(Brushes.Cyan, false);
-            colorsUsed.Add(Brushes.DarkGray, false);
+            colorsUsed.Add(Brushes.Olive, false);
+            colorsUsed.Add(Brushes.DarkTurquoise, false);
             colorsUsed.Add(Brushes.LimeGreen, false);
+            colorsUsed.Add(Brushes.DarkOliveGreen, false);
+            colorsUsed.Add(Brushes.RoyalBlue, false);
+            colorsUsed.Add(Brushes.Sienna, false);
+            colorsUsed.Add(Brushes.Violet, false);
+            colorsUsed.Add(Brushes.Tomato, false);
             
             numLinesText = 0;
+
+      //      mudOutputText.AddHandler(Hyperlink.RequestNavigateEvent,
+          //      new RoutedEventHandler(this.link_RequestNavigate));
 
             CommandBinding openWorldCommandBinding = new CommandBinding(
             openWorldCommand, openWorldMenuItem_Command, openWorldCanExecute);
@@ -128,48 +188,8 @@ namespace Yam
             _readTimer.Dispose();
             this.Dispose();
         }
-
-        public static RoutedCommand openWorldCommand = new RoutedCommand();
-        public int numLines = 0;
-        private int _numLinesText = 0;
-        private string _worldURLText = "Not connected";
         
-        //Info vars bound to status bar
-        public string worldURLText
-        {
-            get { return _worldURLText; }
-            set
-            {
-                _worldURLText = value;
-                //Notify the binding that the value has changed.
-                this.OnPropertyChanged("worldURLText");
-            }
-        }
-        public int numLinesText
-        {
-            get { return _numLinesText; }
-            set
-            {
-                _numLinesText = value;
-                //Notify the binding that the value has changed.
-                this.OnPropertyChanged("numLinesText");
-            }
-        }
-
-        // Text and its color
-        public struct ColoredText
-        {
-            public string text;
-            public Brush colorName;
-
-        }
-        struct FormattedText
-        {
-            public string text;
-            public Brush color;
-            public FontWeight weight;
-            public bool isLink;
-        }
+        
         
       #region INotifyPropertyChanged Members
 
@@ -197,7 +217,7 @@ namespace Yam
                     {
                         currentWorld.writeToWorld(prompt);
                         userInputText.Clear();
-                        mudOutputText.ScrollToEnd();
+                        //mudOutputText.ScrollToEnd();
                     }
                     else
                     {
@@ -214,11 +234,13 @@ namespace Yam
             //Scroll the output up and down instead of the input box
             else if (e.Key == Key.PageUp)
             {
+                numLinesText = 0;
                 mudOutputText.PageUp();
                 e.Handled = true;
             }
             else if (e.Key == Key.PageDown)
             {
+                numLinesText = 0;
                 mudOutputText.PageDown();
                 e.Handled = true;
             }
@@ -234,12 +256,9 @@ namespace Yam
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
+            numLinesText = mudOutputText.VerticalOffset;
             if (currentWorld.IsConnected)
-            {
-            //    NoArgDelegate fetcher = new NoArgDelegate(
-              //      this.ReadFromWorld);
-
-                //fetcher.BeginInvoke(null, null);
+            {            
                 ReadFromWorld();
             }
         }
@@ -261,14 +280,7 @@ namespace Yam
                     foreach (string line in lines)
                     {
                         fromBuffer.Add(line);
-                    }
-                    //List<FormattedText> mudBuffer = HandleBuffering(fromBuffer);
-                    
-                    /*
-                    App.Current.Dispatcher.BeginInvoke(
-                    System.Windows.Threading.DispatcherPriority.SystemIdle,
-                        new OneArgDelegate(DrawOutput), mudBuffer);                    
-                     */
+                    }                    
                     ScheduleDisplayUpdate(fromBuffer);
                 }
                 _readTimer.Enabled = true;
@@ -276,7 +288,6 @@ namespace Yam
             
 
         }
-        List<string> mudBufferGlobal = new List<string>();
 
         //Because the display is updated async, make sure that it doesn't
         //get scheduled twice. Otherwise text might get processed and displayed
@@ -284,8 +295,8 @@ namespace Yam
         private void ScheduleDisplayUpdate(List<string> fromBuffer)
         {
             //If an update isn't already happening
-            if (!_displayUpdatePending)
-            {
+        //    if (!_displayUpdatePending)
+      //      {
                 List<FormattedText> mudBuffer = new List<FormattedText>();
                 List<FormattedText> temp = new List<FormattedText>();
 
@@ -305,30 +316,33 @@ namespace Yam
                     System.Windows.Threading.DispatcherPriority.SystemIdle,
                         new OneArgDelegate(DrawOutput), mudBuffer);
 
-                _displayUpdatePending = true;
-            }
+             //   _displayUpdatePending = true;
+       //     }
             //Otherwise save the sent text for later
-            else
-            {
-                foreach (string line in fromBuffer)
-                {
-                    mudBufferGlobal.Add(line);
-                }
-            }
+        //    else
+       //     {
+          //      foreach (string line in fromBuffer)
+          //      {
+               //     mudBufferGlobal.Add(line);
+           //     }
+      //      }
         }
-        private bool _displayUpdatePending = false;
 
         // This updates mudOutputText
         private void DrawOutput(List<FormattedText> mudBuffer)
         {
             _displayUpdatePending = false;
 
+           
             //Use newPara and newSpan for buffering
             Paragraph newPara = new Paragraph();
             Span newSpan = new Span();
        
             newPara.FontSize = mudOutputText.Document.FontSize; 
-            newPara.LineHeight = mudOutputText.Document.FontSize + 4;
+            //Add a little bit of padding around the text lines
+            //dependent on the font size
+            newPara.LineHeight = mudOutputText.Document.FontSize + 
+                (mudOutputText.Document.FontSize / 4);
 
             char[] charsToTrim = {'\n', '\r'};
             
@@ -403,13 +417,14 @@ namespace Yam
             }
             mudOutputText.Document.Blocks.Add(newPara);
             mudOutputText.Document.PagePadding = new Thickness(10);
-            
-            numLinesText = numLines;            
+     
+            numLinesText = numLines;                        
         }
         private void link_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             var hyperlink = (Hyperlink)sender;
             Process.Start(hyperlink.NavigateUri.ToString());
+
         }
         public static string ReplaceLastOccurrence(string Source, string Find, string Replace)
         {
@@ -485,8 +500,8 @@ namespace Yam
                             {
                                 //If this is the first channel since the program started, make it tomato, why not
                                 first_loop = false;
-                                colorsUsed[Brushes.Red] = true;
-                                channelColor = Brushes.Red;
+                                colorsUsed[Brushes.Maroon] = true;
+                                channelColor = Brushes.Maroon;
                                 channelList.Add(new ColoredText()
                                 {
                                     text = channelText,
@@ -515,7 +530,7 @@ namespace Yam
                             mudBuffer.Add(new FormattedText
                             {
                                 text = connectText,
-                                color = Brushes.Purple,
+                                color = Brushes.DarkMagenta,
                                 isLink = false, 
                                 weight = FontWeights.Normal
                             });
@@ -544,11 +559,7 @@ namespace Yam
                                     mudBuffer.Add(new FormattedText { text = buffer, color = 
                                         defaultColor, isLink = false, weight = FontWeights.Normal});
                                 }
-                                /*
-                                char[] charsToTrim = { '\"' };
-                                string temp = words[i].TrimEnd(charsToTrim);
-                                string temp2 = temp.TrimStart(charsToTrim);
-                                 */
+
                                 mudBuffer.Add(new FormattedText { text = words[i], color = 
                                     defaultColor, isLink = true, weight = FontWeights.Normal });
                                 
@@ -589,11 +600,45 @@ namespace Yam
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+
+
         private void mudOutputText_TextChanged(object sender, EventArgs e)
         {
-            mudOutputText.ScrollToEnd();
+            RichTextBox rtb = sender as RichTextBox;
+            //rtb.ScrollToEnd();
+            double dVer = rtb.VerticalOffset;
+
+
+
+            //get the vertical size of the scrollable content area
+
+            double dViewport = rtb.ViewportHeight;
+
+
+
+            //get the vertical size of the visible content area
+
+            double dExtent = rtb.ExtentHeight;
+
+            if (dVer != 0)
+            {
+
+                if (dVer + dViewport >= dExtent)
+                   // || rtb.ExtentHeight < rtb.ViewportHeight)
+                    rtb.ScrollToEnd();
+
+                //else MessageBox.Show("It is not at the bottom now");
+
+            }
+
+            else
+            {
+
+                //MessageBox.Show("ActualyIt is at the top now!");
+
+            }
         }
-       
+
         private void connectToWorld(WorldInfo world)
         {            
             if (!currentWorld.IsConnected)
@@ -607,6 +652,7 @@ namespace Yam
 
                     this.Title = "YAM - " + world.WorldName;
 
+                    //Display the world URL and IP in the status bar
                     IPHostEntry Host = Dns.GetHostEntry(world.WorldURL);
                     string ipAddress = String.Empty;
                     for (int i = 0; i < Host.AddressList.Length; i++)
@@ -621,24 +667,12 @@ namespace Yam
 
                     if (world.AutoLogin)
                     {
-                        try
-                        {
-                            string loginString = String.Empty;
+                        string loginString = String.Empty;
 
-                            loginString = "connect " + world.Username + " " +
-                                world.Password + "\n";
+                        loginString = "connect " + world.Username + " " +
+                            world.Password + "\n";
 
-                            currentWorld.writeToWorld(loginString);
-
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            //If no login info is saved, don't do anything    
-                        }
-                        catch (Exception)
-                        {
-                            MessageBox.Show("Loading login info error");
-                        }
+                        currentWorld.writeToWorld(loginString);                        
                     }
                     //Enable timer that reads from world
                     reconnectWorldMenuItem.IsEnabled = true;
@@ -652,8 +686,10 @@ namespace Yam
                     mudOutputText.AppendText(temp, Brushes.Gold);
                 }
             }
-            else
+            else                
                 mudOutputText.AppendText("\nAlready connected to a world", Brushes.Gold);
+
+           
         }
         #region Main Menu
 
@@ -696,12 +732,18 @@ namespace Yam
                     
                     string path = window.worldList.SelectedValue.ToString();
                     string[] temparray = path.Split(' ');
-                  
-                    WorldInfo tempWorld = ReadWorld();                   
-                    if (temparray[1] == tempWorld.WorldName)
+
+                    List<WorldInfo> loadedWorlds = new List<WorldInfo>();
+                    WorldCollection wc = MainWindow.ReadWorld();
+                    loadedWorlds = wc.Worlds;
+
+                    foreach (WorldInfo world in loadedWorlds)
                     {
-                        currentWorldInfo = tempWorld;
-                    }                   
+                        if (temparray[1] == world.WorldName)
+                        {
+                            currentWorldInfo = world;
+                        }
+                    }
                 }                                
                
                 connectToWorld(currentWorldInfo);
@@ -786,45 +828,34 @@ namespace Yam
 
         private void ShowFontDialog()
         {
-            NewFontPicker fontChooser = new NewFontPicker();
-            fontChooser.Owner = this;
-
-            fontChooser.SetPropertiesFromObject(mudOutputText);
-           // fontChooser.PreviewSampleText = "The quick brown fox jumps over the lazy dog.";
-
-            if (fontChooser.ShowDialog().Value)
-            {               
-                fontChooser.ApplyPropertiesToObject(mudOutputText.Document);
-       //         MessageBox.Show(FontSizeListItem.PixelsToPoints(fontChooser.SelectedFontSize).ToString());
-         //       mudOutputText.FontSize = fontChooser.SelectedFontSize;
-                foreach (Block block in mudOutputText.Document.Blocks)
-                {
-                    block.FontSize = fontChooser.SelectedFontSize;
-                }                     
-            }
+           
         }
         
         private void aboutMenuItem_Click(object sender, EventArgs e)
         {
-            AboutBox box = new AboutBox();
+            About box = new About();
             box.Show();
         }
         #endregion
 
-        public void WriteWorld(WorldInfo data)
+        public static void WriteWorld(WorldInfo data)
         {
+            WorldCollection tempwc = ReadWorld();
+
             System.Xml.Serialization.XmlSerializer writer =
-                 new System.Xml.Serialization.XmlSerializer(data.GetType());
+                 new System.Xml.Serialization.XmlSerializer(tempwc.GetType());
             System.IO.StreamWriter file =
                new System.IO.StreamWriter(configFile);
 
-            writer.Serialize(file, data);
+            tempwc.AddWorld(data);
+            writer.Serialize(file, tempwc);
+
             file.Close();
         }
 
-        public WorldInfo ReadWorld()
+        public static WorldCollection ReadWorld()
         {
-            WorldInfo data = new WorldInfo();
+            WorldCollection data = new WorldCollection();
 
             System.Xml.Serialization.XmlSerializer reader = new
                 System.Xml.Serialization.XmlSerializer(data.GetType());
@@ -832,33 +863,59 @@ namespace Yam
             // Read the XML file.
             System.IO.StreamReader file =
                    new System.IO.StreamReader(Stream.Null);
-            try
-            {
-                file = new System.IO.StreamReader(configFile);
-            }
-            catch (Exception)
-            {
-               // MessageBox.Show("Error reading world");
-            }
 
-            // Deserialize the content of the file 
-            try
+            bool FileExists = File.Exists(configFile);
+            if (FileExists)
             {
-                data = (WorldInfo)reader.Deserialize(file);
-            }
-            catch (Exception)
-            {
+                try
+                {
+                    file = new System.IO.StreamReader(configFile);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Error reading file");
+                }
 
+                // Deserialize the content of the file 
+                try
+                {
+                    data = (WorldCollection)reader.Deserialize(file);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Error with Deserialize");
+                }
             }
-
             file.Close();
 
             return data;
         }
+
+        private void PrefMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+
+            PreferenceBox fontChooser = new PreferenceBox();
+            fontChooser.Owner = this;
+
+            fontChooser.SetPropertiesFromObject(mudOutputText);
+            // fontChooser.PreviewSampleText = "The quick brown fox jumps over the lazy dog.";
+
+            if (fontChooser.ShowDialog().Value)
+            {
+                fontChooser.ApplyPropertiesToObject(mudOutputText.Document);
+                //         MessageBox.Show(FontSizeListItem.PixelsToPoints(fontChooser.SelectedFontSize).ToString());
+                //       mudOutputText.FontSize = fontChooser.SelectedFontSize;
+                foreach (Block block in mudOutputText.Document.Blocks)
+                {
+                    block.FontSize = fontChooser.SelectedFontSize;
+                }
+            }
+        }
+
+       
     }
 }
-
-
 
 public static class RichTextBoxExtensions
 {
@@ -867,7 +924,7 @@ public static class RichTextBoxExtensions
     {
         
         BrushConverter bc = new BrushConverter();
-
+/*
         TextPointer moveTo = box.CaretPosition.GetNextInsertionPosition(LogicalDirection.Forward);
 
         if (moveTo != null)
@@ -875,7 +932,7 @@ public static class RichTextBoxExtensions
 
             box.CaretPosition = moveTo;
 
-        }
+        }*/
         TextRange tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
         tr.Text = text;
         try
@@ -889,4 +946,58 @@ public static class RichTextBoxExtensions
         }
         catch (FormatException) { }
     }
+
+    public static bool ScrolledUp(this RichTextBox box)
+    {
+
+        // get the vertical scroll position
+        double dVer = box.VerticalOffset;
+
+        //get the vertical size of the scrollable content area
+        double dViewport = box.ViewportHeight;
+
+        //get the vertical size of the visible content area
+        double dExtent = box.ExtentHeight;
+        //Scrolled up
+        if (box.VerticalOffset == box.ViewportHeight)
+            return true;
+                //Not scrolled up
+        else
+            return false;                                               
+    }
+    public class RichTextBoxThing : DependencyObject
+    {
+        public static bool GetIsAutoScroll(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(IsAutoScrollProperty);
+        }
+
+        public static void SetIsAutoScroll(DependencyObject obj, bool value)
+        {
+            obj.SetValue(IsAutoScrollProperty, value);
+        }
+
+        public static readonly DependencyProperty IsAutoScrollProperty =
+            DependencyProperty.RegisterAttached("IsAutoScroll", typeof(bool), typeof(RichTextBoxThing), new PropertyMetadata(false, new PropertyChangedCallback((s, e) =>
+            {
+                RichTextBox richTextBox = s as RichTextBox;
+                if (richTextBox != null)
+                {
+                    if ((bool)e.NewValue)
+                        richTextBox.TextChanged += richTextBox_TextChanged;
+                    else if ((bool)e.OldValue)
+                        richTextBox.TextChanged -= richTextBox_TextChanged;
+
+                }
+            })));
+
+        static void richTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            RichTextBox richTextBox = sender as RichTextBox;
+            if ((richTextBox.VerticalOffset + richTextBox.ViewportHeight) == richTextBox.ExtentHeight || richTextBox.ExtentHeight < richTextBox.ViewportHeight)
+                richTextBox.ScrollToEnd();
+        }
+    }
+
 }
+

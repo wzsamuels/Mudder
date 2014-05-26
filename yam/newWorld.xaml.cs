@@ -38,11 +38,16 @@ namespace Yam
     /// </summary>
     public partial class newWorld : Window
     {
+        public WorldInfo _ui = new WorldInfo();
+        public bool newWorldSelect = false;
+        private bool autoLogin = false;
+        public bool saveLogin = false;
+        private const string configFile = "world_data"; 
+
         public newWorld()
         {
             InitializeComponent();
             
-
             //Set up UI defaults
 
             usernameText.IsEnabled = false;
@@ -50,24 +55,29 @@ namespace Yam
             usernameBlock.Foreground = Brushes.Gray;
             passwordBlock.Foreground = Brushes.Gray;
 
-            //Load saved worlds
+            ObservableCollection<ListBoxItem> listItems = new ObservableCollection<ListBoxItem>();
+            List<WorldInfo> loadedWorlds = new List<WorldInfo>();
 
-            WorldInfo tempWorld = ReadWorld();
-            if (tempWorld.WorldName != String.Empty)
+            WorldCollection wc = MainWindow.ReadWorld();
+            loadedWorlds = wc.Worlds;
+
+            if (loadedWorlds != null)
             {
-                ListBoxItem world = new ListBoxItem();
-                world.Content = tempWorld.WorldName;
-                world.Name = tempWorld.WorldName;
-                ObservableCollection<ListBoxItem> oc = new ObservableCollection<ListBoxItem>();
-                oc.Add(world);
-                worldList.ItemsSource = oc;
-            }
-            
-            if (worldList.Items.Count > 0)
-            {
-                worldList.SelectedIndex = 0;
-                savedWorldButton.IsChecked = true;
-                worldList.Focus();
+                foreach (WorldInfo world in loadedWorlds)
+                {
+                    ListBoxItem worldItem = new ListBoxItem();
+                    worldItem.Content = world.WorldName;
+                    worldItem.Name = world.WorldName;
+
+                    listItems.Add(worldItem);
+                }
+                worldList.ItemsSource = listItems;
+                if (worldList.Items.Count > 0)
+                {
+                    worldList.SelectedIndex = 0;
+                    savedWorldButton.IsChecked = true;
+                    worldList.Focus();
+                }               
             }
             else
             {
@@ -75,12 +85,7 @@ namespace Yam
                 worldNameText.Focus();
             }
 
-        }
-
-        WorldInfo _ui = new WorldInfo();
-        public bool newWorldSelect = false;
-        public bool autoLogin = false;
-        public bool saveLogin = false;
+        }        
 
         public WorldInfo WorldInfo
         {
@@ -100,7 +105,7 @@ namespace Yam
             LoginCheck_Handle(sender as CheckBox);
         }
 
-        void LoginCheck_Handle(CheckBox checkBox)
+        private void LoginCheck_Handle(CheckBox checkBox)
         {
             // Use IsChecked.
             if (loginCheck.IsChecked.HasValue && loginCheck.IsChecked.Value)
@@ -136,7 +141,7 @@ namespace Yam
             SaveLogin_Handle(sender as CheckBox);
         }
 
-        void SaveLogin_Handle(CheckBox checkBox)
+        private void SaveLogin_Handle(CheckBox checkBox)
         {
             // Use IsChecked.
             if (passwordCheck.IsChecked.HasValue && passwordCheck.IsChecked.Value)
@@ -234,57 +239,13 @@ namespace Yam
             this.DialogResult = false;
             this.Close();
         }
+
         private void CloseWindow()
         {
            
             this.DialogResult = true;
 
             this.Close();
-        }
-        private const string configFile = "world_data";
-        public void WriteWorld(WorldInfo data)
-        {
-            System.Xml.Serialization.XmlSerializer writer =
-                 new System.Xml.Serialization.XmlSerializer(data.GetType());
-            System.IO.StreamWriter file =
-               new System.IO.StreamWriter(configFile);
-
-            writer.Serialize(file, data);
-            file.Close();
-        }
-
-        public WorldInfo ReadWorld()
-        {
-            WorldInfo data = new WorldInfo();
-
-            System.Xml.Serialization.XmlSerializer reader = new
-                System.Xml.Serialization.XmlSerializer(data.GetType());
-
-            // Read the XML file.
-            System.IO.StreamReader file =
-                   new System.IO.StreamReader(Stream.Null);
-            try
-            {
-                file = new System.IO.StreamReader(configFile);
-            }
-            catch (Exception)
-            {
-
-            }
-
-            // Deserialize the content of the file 
-            try
-            {
-                data = (WorldInfo)reader.Deserialize(file);
-            }
-            catch (Exception)
-            {
-
-            }
-
-            file.Close();
-
-            return data;
         }
     }
 }

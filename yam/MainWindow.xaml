@@ -1,8 +1,10 @@
 ﻿<Window x:Class="Yam.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:commands="clr-namespace:Yam"
         x:Name="WName"
+        xmlns:local="clr-namespace:Yam"
         Title="MainWindow" Height="700" Width="800" FontSize="14">
 
     <Grid Margin="0,0,0,0">
@@ -15,9 +17,10 @@
             <RowDefinition Height="40"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <Menu x:Name="mainMenu" Grid.Row="0" Height="25" Margin="0,0,0,0" VerticalAlignment="Top" BorderThickness="0">
-            <MenuItem Header="_File">
+        <Menu x:Name="mainMenu" Grid.Row="0" Height="25" Margin="0,0,0,0" VerticalAlignment="Top" BorderThickness="0"
+              Width="auto">
+  
+                <MenuItem Header="_File">
                 <MenuItem Name="openWorldMenuItem" Header="Open World" 
                           InputGestureText="Ctrl+O"/>
                 <MenuItem x:Name="saveWorldMenuItem" Header="Save World" Click="saveWorldMenuItem_Click"/>
@@ -27,7 +30,7 @@
 
             </MenuItem>
 
-            <MenuItem Header="_Edit">
+            <MenuItem Header="_Edit" >
                 <MenuItem Header="_Undo" Command="Undo" />
                 <MenuItem Header="_Redo" Command="Redo" />
                 <Separator/>
@@ -39,18 +42,24 @@
                 <Separator/>
                 <MenuItem x:Name="findMenuItem" Header="_Find" Command="Find"/>
             </MenuItem>
-            <MenuItem Header="_Tools">
+                <MenuItem Header="_Tools">
                 <MenuItem Header="_Change Font" Click="fontMenuItem_Click"/>
+                <MenuItem Header="_Preferences" Click="PrefMenuItem_Click"/>
             </MenuItem>
             <!--
             <MenuItem Header="_View" />
             <MenuItem Header="_Window" />
              -->
-            <MenuItem Header="_Help">
+                <MenuItem Header="_Help">
                 <MenuItem Header="About" Click="aboutMenuItem_Click"/>
             </MenuItem>
-
-
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"></Separator >
+                <TextBlock HorizontalAlignment="Right"
+                           Margin="0,0,0,0">Foreground Color</TextBlock>
+                <xctk:ColorPicker HorizontalAlignment="Right"
+                                  Margin="0,0,0,0"/>
+            <TextBlock HorizontalAlignment="Right" Text="Background Text"/>
+            <xctk:ColorPicker HorizontalAlignment="Stretch" Width="80"/>
         </Menu>
 
         <TabControl x:Name="tabControl" Grid.Row="1" >
@@ -69,25 +78,27 @@
                         <RowDefinition Height="100*"/>
                     </Grid.RowDefinitions>
 
-                    <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
-                        VerticalScrollBarVisibility="Visible"  IsDocumentEnabled="True" 
-                        FontSize="16" TextChanged="mudOutputText_TextChanged" Background="Black" Foreground="#BEBEBE" 
-                        IsReadOnlyCaretVisible="True" FontFamily = "DejaVu Sans Mono, Courier New">
-                        <RichTextBox.Resources>
-                            <Style TargetType="{x:Type Paragraph}">
-                                <Setter Property="Margin" Value="0"/>
-                            </Style>
-                        </RichTextBox.Resources>
-                        <FlowDocument FontSize="16" LineHeight="20">
-                            <!--
+                        <!--VerticalScrollBarVisibility="Visible"-->
+                        <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
+                           ScrollViewer.VerticalScrollBarVisibility="Auto" IsDocumentEnabled="True" IsReadOnly="True"
+                        FontSize="16" Background="Black" Foreground="#BEBEBE" TextChanged="mudOutputText_TextChanged"
+                        FontFamily = "DejaVu Sans Mono, Courier New">
+                            <RichTextBox.Resources>
+                                <Style TargetType="{x:Type Paragraph}">
+                                    <Setter Property="Margin" Value="0"/>
+                                </Style>
+                            </RichTextBox.Resources>
+                            <FlowDocument FontSize="16" LineHeight="20">
+                                <!--
                             <FlowDocument.Resources>
                                 <Style TargetType="{x:Type Paragraph}">
                                     <Setter Property="LineHeight" Value="20"/>
                                 </Style>
                             </FlowDocument.Resources>
                             -->
-                        </FlowDocument>
-                    </RichTextBox>
+                            </FlowDocument>
+                        </RichTextBox>
+
                 </Grid>
             </TabItem>
             <!--
@@ -107,14 +118,19 @@
                 <TextBlock Foreground="Black"
                        Text = "{Binding worldURLText, StringFormat=Connected to: {0}}"/>
             </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Left">
+                <TextBlock Foreground="Black"
+                       Text = "{Binding mudScrollBar.VerticalOffset, StringFormat=VO: {0}}"/>
+            </StatusBarItem>
+            
             <StatusBarItem HorizontalAlignment="Right">
                 <TextBlock Foreground="Black" x:Name="worldLabel"
                        Text = "{Binding numLinesText, StringFormat=Lines Read: {0}}"/>
-                
+
             </StatusBarItem>
         </StatusBar>
-            
-        
+
+
 
     </Grid>
 </Window>
