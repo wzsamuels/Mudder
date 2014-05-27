@@ -125,6 +125,9 @@
     <Compile Include="FontFamilyListItem.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FontGrid.xaml.cs">
+      <DependentUpon>FontGrid.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FontSizeListItem.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -137,6 +140,9 @@
     </Compile>
     <Compile Include="PreferenceBox.xaml.cs">
       <DependentUpon>PreferenceBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ColorGrid.xaml.cs">
+      <DependentUpon>ColorGrid.xaml</DependentUpon>
     </Compile>
     <Compile Include="SearchWindow.xaml.cs">
       <DependentUpon>SearchWindow.xaml</DependentUpon>
@@ -154,6 +160,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="FontGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -168,6 +178,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="PreferenceBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ColorGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

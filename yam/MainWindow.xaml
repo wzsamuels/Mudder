@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:commands="clr-namespace:Yam"
-        x:Name="WName"
+        x:Name="WName"  xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+        xmlns:uc="clr-namespace:Yam"
         xmlns:local="clr-namespace:Yam"
         Title="MainWindow" Height="700" Width="800" FontSize="14">
 
@@ -19,7 +20,7 @@
         </Grid.RowDefinitions>
         <Menu x:Name="mainMenu" Grid.Row="0" Height="25" Margin="0,0,0,0" VerticalAlignment="Top" BorderThickness="0"
               Width="auto">
-  
+            
                 <MenuItem Header="_File">
                 <MenuItem Name="openWorldMenuItem" Header="Open World" 
                           InputGestureText="Ctrl+O"/>
@@ -43,7 +44,7 @@
                 <MenuItem x:Name="findMenuItem" Header="_Find" Command="Find"/>
             </MenuItem>
                 <MenuItem Header="_Tools">
-                <MenuItem Header="_Change Font" Click="fontMenuItem_Click"/>
+            <!--<MenuItem Header="_Change Font" Click="fontMenuItem_Click"/>-->
                 <MenuItem Header="_Preferences" Click="PrefMenuItem_Click"/>
             </MenuItem>
             <!--
@@ -54,12 +55,7 @@
                 <MenuItem Header="About" Click="aboutMenuItem_Click"/>
             </MenuItem>
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"></Separator >
-                <TextBlock HorizontalAlignment="Right"
-                           Margin="0,0,0,0">Foreground Color</TextBlock>
-                <xctk:ColorPicker HorizontalAlignment="Right"
-                                  Margin="0,0,0,0"/>
-            <TextBlock HorizontalAlignment="Right" Text="Background Text"/>
-            <xctk:ColorPicker HorizontalAlignment="Stretch" Width="80"/>
+                
         </Menu>
 
         <TabControl x:Name="tabControl" Grid.Row="1" >

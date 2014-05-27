@@ -58,3 +58,8 @@ C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\About.baml
 C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\About.g.cs
 C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\PreferenceBox.baml
 C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\PreferenceBox.g.cs
+C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\FontGrid.baml
+C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\FontGrid.g.cs
+C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\ColorGrid.baml
+C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\ColorGrid.g.cs

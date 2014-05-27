@@ -95,7 +95,7 @@ namespace Yam
                    return false;
                }
            }
-           catch (Exception e)
+           catch (Exception)
            {
                //MessageBoxResult result = MessageBox.Show("Do you want to close this window?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
                return false;

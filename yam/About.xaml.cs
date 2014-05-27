@@ -14,9 +14,9 @@ using System.Windows.Shapes;
 
 using System.ComponentModel;
 using System.Drawing;
-using System.Linq;
+
 using System.Reflection;
-using System.Threading.Tasks;
+
 
 
 namespace Yam
@@ -26,11 +26,6 @@ namespace Yam
     /// </summary>
     public partial class About : Window
     {
-        private string TitleText;
-        private string ProductNameText;
-        private string VersionText;
-        private string CopyrightText;
-
         public About()
         {
             InitializeComponent();

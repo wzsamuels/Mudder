@@ -1,6 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System;
+using System.Collections;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -9,28 +11,38 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
+
+using System.Globalization;
 using System.Windows.Threading;
 
-namespace FontDialogSample
+namespace Yam
 {
     /// <summary>
-    /// Interaction logic for FontChooser.xaml
+    /// Interaction logic for FontGrid.xaml
     /// </summary>
-    public partial class FontChooser : System.Windows.Window
+    public partial class FontGrid : UserControl
     {
-        #region Private fields and types
+        public FontGrid()
+        {
+            InitializeComponent();
+            
 
-        private ICollection<FontFamily> _familyCollection;          // see FamilyCollection property
+         }
+        
+        
+
+         private ICollection<FontFamily> _familyCollection;          // see FamilyCollection property
         private string _defaultSampleText;
         private string _previewSampleText;
-        private string _pointsText;
 
         private bool _updatePending;                                // indicates a call to OnUpdate is scheduled
         private bool _familyListValid;                              // indicates the list of font families is valid
         private bool _typefaceListValid;                            // indicates the list of typefaces is valid
         private bool _typefaceListSelectionValid;                   // indicates the current selection in the typeface list is valid
         private bool _previewValid;                                 // indicates the preview control is valid
-        private Dictionary<TabItem, TabState> _tabDictionary;       // state and logic for each tab
+     
         private DependencyProperty _currentFeature;
         private TypographyFeaturePage _currentFeaturePage;
 
@@ -76,7 +88,7 @@ namespace FontDialogSample
             public readonly string SampleTextTag;
 
             private static PropertyChangedCallback _callback = new PropertyChangedCallback(
-                FontChooser.TypographicPropertyChangedCallback
+                FontGrid.TypographicPropertyChangedCallback
                 );
         }
 
@@ -151,21 +163,17 @@ namespace FontDialogSample
             public readonly UpdateCallback InitializeTab;
         }
 
-        #endregion
 
         #region Construction and initialization
 
-        public FontChooser()
-        {
-            InitializeComponent();
-        }
+  
 
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
 
             _previewSampleText = _defaultSampleText = previewTextBox.Text;
-            _pointsText = typefaceNameRun.Text;
+          //  _pointsText = typefaceNameRun.Text;
 
             // Hook up events for the font family list and associated text box.
             fontFamilyTextBox.SelectionChanged += new RoutedEventHandler(fontFamilyTextBox_SelectionChanged);
@@ -181,6 +189,10 @@ namespace FontDialogSample
             sizeTextBox.PreviewKeyDown += new KeyEventHandler(sizeTextBox_PreviewKeyDown);
             sizeList.SelectionChanged += new SelectionChangedEventHandler(sizeList_SelectionChanged);
 
+            heightTextBox.TextChanged += new TextChangedEventHandler(heightTextBox_TextChanged);
+            heightTextBox.PreviewKeyDown += new KeyEventHandler(heightTextBox_PreviewKeyDown);
+            heightList.SelectionChanged += new SelectionChangedEventHandler(heightList_SelectionChanged);
+
             // Hook up events for text decoration check boxes.
             RoutedEventHandler textDecorationEventHandler = new RoutedEventHandler(textDecorationCheckStateChanged);
             underlineCheckBox.Checked += textDecorationEventHandler;
@@ -193,13 +205,12 @@ namespace FontDialogSample
             overlineCheckBox.Unchecked += textDecorationEventHandler;
 
             // Initialize the dictionary that maps tab control items to handler objects.
-            _tabDictionary = new Dictionary<TabItem, TabState>(tabControl.Items.Count);
-            _tabDictionary.Add(samplesTab, new TabState(new UpdateCallback(InitializeSamplesTab)));
-            _tabDictionary.Add(typographyTab, new TabState(new UpdateCallback(InitializeTypographyTab)));
-            _tabDictionary.Add(descriptiveTextTab, new TabState(new UpdateCallback(InitializeDescriptiveTextTab)));
+
+           // _tabDictionary.Add(typographyTab, new TabState(new UpdateCallback(InitializeTypographyTab)));
+          //  _tabDictionary.Add(descriptiveTextTab, new TabState(new UpdateCallback(InitializeDescriptiveTextTab)));
 
             // Hook up events for the tab control.
-            tabControl.SelectionChanged += new SelectionChangedEventHandler(tabControl_SelectionChanged);
+          //  tabControl.SelectionChanged += new SelectionChangedEventHandler(tabControl_SelectionChanged);
 
             // Initialize the list of font sizes and select the nearest size.
             foreach (double value in CommonlyUsedFontSizes)
@@ -223,17 +234,7 @@ namespace FontDialogSample
         #endregion
 
         #region Event handlers
-
-        private void OnOKButtonClicked(object sender, RoutedEventArgs e)
-        {
-            this.DialogResult = true;
-            this.Close();
-        }
-
-        private void OnCancelButtonClicked(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
+       
 
         private int _fontFamilyTextBoxSelectionStart;
 
@@ -288,6 +289,19 @@ namespace FontDialogSample
             }
         }
 
+        private void heightTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            double sizeInPoints;
+            if (double.TryParse(heightTextBox.Text, out sizeInPoints))
+            {
+                double sizeInPixels = FontSizeListItem.PointsToPixels(sizeInPoints);
+                if (!FontSizeListItem.FuzzyEqual(sizeInPixels, SelectedHeightSize))
+                {
+                    SelectedHeightSize = sizeInPixels;
+                }
+            }
+        }
+
         private void fontFamilyTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             OnComboBoxPreviewKeyDown(fontFamilyTextBox, fontFamilyList, e);
@@ -296,6 +310,11 @@ namespace FontDialogSample
         private void sizeTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             OnComboBoxPreviewKeyDown(sizeTextBox, sizeList, e);
+        }
+
+        private void heightTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            OnComboBoxPreviewKeyDown(heightTextBox, heightList, e);
         }
 
         private void fontFamilyList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -313,6 +332,15 @@ namespace FontDialogSample
             if (item != null)
             {
                 SelectedFontSize = item.SizeInPixels;
+            }
+        }
+
+        private void heightList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            FontSizeListItem item = heightList.SelectedItem as FontSizeListItem;
+            if (item != null)
+            {
+                SelectedHeightSize = item.SizeInPixels;
             }
         }
 
@@ -351,20 +379,11 @@ namespace FontDialogSample
             textDecorations.Freeze();
             SelectedTextDecorations = textDecorations;
         }
-
-        private void tabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            TabState tab = CurrentTabState;
-            if (tab != null && !tab.IsValid)
-            {
-                tab.InitializeTab();
-                tab.IsValid = true;
-            }
-        }
+       
 
         private void featureList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            InitializeTypographyTab();
+            //InitializeTypographyTab();
         }
 
         #endregion
@@ -400,7 +419,7 @@ namespace FontDialogSample
         {
             foreach (DependencyProperty property in _chooserProperties)
             {
-                FontPropertyMetadata metadata = property.GetMetadata(typeof(FontChooser)) as FontPropertyMetadata;
+                FontPropertyMetadata metadata = property.GetMetadata(typeof(FontGrid)) as FontPropertyMetadata;
                 if (metadata != null)
                 {
                     this.SetValue(property, obj.GetValue(metadata.TargetProperty));
@@ -415,7 +434,7 @@ namespace FontDialogSample
         {
             foreach (DependencyProperty property in _chooserProperties)
             {
-                FontPropertyMetadata metadata = property.GetMetadata(typeof(FontChooser)) as FontPropertyMetadata;
+                FontPropertyMetadata metadata = property.GetMetadata(typeof(FontGrid)) as FontPropertyMetadata;
                 if (metadata != null)
                 {
                     obj.SetValue(metadata.TargetProperty, this.GetValue(property));
@@ -429,7 +448,7 @@ namespace FontDialogSample
             {
                 if (property != except)
                 {
-                    FontPropertyMetadata metadata = property.GetMetadata(typeof(FontChooser)) as FontPropertyMetadata;
+                    FontPropertyMetadata metadata = property.GetMetadata(typeof(FontGrid)) as FontPropertyMetadata;
                     if (metadata != null)
                     {
                         obj.SetValue(metadata.TargetProperty, this.GetValue(property));
@@ -459,7 +478,7 @@ namespace FontDialogSample
                     previewTextBox.Text = newValue;
 
                     // The preview sample text is also used in the family and typeface samples tab.
-                    InvalidateTab(samplesTab);
+                  //  InvalidateTab(samplesTab);
                 }
             }
         }
@@ -771,7 +790,7 @@ namespace FontDialogSample
 
         private static void TypographicPropertyChangedCallback(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            FontChooser chooser = obj as FontChooser;
+            FontGrid chooser = obj as FontGrid;
             if (chooser != null)
             {
                 chooser.InvalidatePreview();
@@ -794,7 +813,7 @@ namespace FontDialogSample
         }
         static void SelectedFontFamilyChangedCallback(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            ((FontChooser)obj).OnSelectedFontFamilyChanged(e.NewValue as FontFamily);
+            ((FontGrid)obj).OnSelectedFontFamilyChanged(e.NewValue as FontFamily);
         }
 
         public static readonly DependencyProperty SelectedFontWeightProperty = RegisterFontProperty(
@@ -832,8 +851,10 @@ namespace FontDialogSample
 
         static void SelectedTypefaceChangedCallback(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            ((FontChooser)obj).InvalidateTypefaceListSelection();
+            ((FontGrid)obj).InvalidateTypefaceListSelection();
         }
+
+        //Font Size
 
         public static readonly DependencyProperty SelectedFontSizeProperty = RegisterFontProperty(
            "SelectedFontSize",
@@ -847,8 +868,26 @@ namespace FontDialogSample
         }
         private static void SelectedFontSizeChangedCallback(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            ((FontChooser)obj).OnSelectedFontSizeChanged((double)(e.NewValue));
+            ((FontGrid)obj).OnSelectedFontSizeChanged((double)(e.NewValue));
         }
+
+        //Line Height
+
+        public static readonly DependencyProperty SelectedHeightSizeProperty = RegisterFontProperty(
+          "SelectedHeightSize",
+          TextBlock.FontSizeProperty,
+          new PropertyChangedCallback(SelectedHeightSizeChangedCallback)
+          );
+        public double SelectedHeightSize
+        {
+            get { return (double)GetValue(SelectedHeightSizeProperty); }
+            set { SetValue(SelectedHeightSizeProperty, value); }
+        }
+        private static void SelectedHeightSizeChangedCallback(DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            ((FontGrid)obj).OnSelectedHeightSizeChanged((double)(e.NewValue));
+        }
+
 
         public static readonly DependencyProperty SelectedTextDecorationsProperty = RegisterFontProperty(
            "SelectedTextDecorations",
@@ -862,7 +901,7 @@ namespace FontDialogSample
         }
         private static void SelectedTextDecorationsChangedCallback(DependencyObject obj, DependencyPropertyChangedEventArgs e)
         {
-            FontChooser chooser = (FontChooser)obj;
+            FontGrid chooser = (FontGrid)obj;
             chooser.OnTextDecorationsChanged();
         }
 
@@ -882,7 +921,7 @@ namespace FontDialogSample
             return DependencyProperty.Register(
                 targetProperty.Name,
                 t,
-                typeof(FontChooser),
+                typeof(FontGrid),
                 new TypographicPropertyMetadata(
                     targetProperty.DefaultMetadata.DefaultValue,
                     targetProperty,
@@ -908,7 +947,7 @@ namespace FontDialogSample
             return DependencyProperty.Register(
                 propertyName,
                 targetProperty.PropertyType,
-                typeof(FontChooser),
+                typeof(FontGrid),
                 new FontPropertyMetadata(
                     targetProperty.DefaultMetadata.DefaultValue,
                     changeCallback,
@@ -1021,8 +1060,25 @@ namespace FontDialogSample
                 sizeTextBox.Text = sizeInPoints.ToString();
             }
 
-            // Schedule background updates.
-            InvalidateTab(typographyTab);
+            InvalidatePreview();
+        }
+
+        private void OnSelectedHeightSizeChanged(double sizeInPixels)
+        {
+            // Select the list item, if the size is in the list.
+            double sizeInPoints = FontSizeListItem.PixelsToPoints(sizeInPixels);
+            if (!SelectListItem(heightList, sizeInPoints))
+            {
+                heightList.SelectedIndex = -1;
+            }
+
+            // Set the text box contents if it doesn't already match the current size.
+            double textBoxValue;
+            if (!double.TryParse(heightTextBox.Text, out textBoxValue) || !FontSizeListItem.FuzzyEqual(textBoxValue, sizeInPoints))
+            {
+                heightTextBox.Text = sizeInPoints.ToString();
+            }
+
             InvalidatePreview();
         }
 
@@ -1063,7 +1119,7 @@ namespace FontDialogSample
             overlineCheckBox.IsChecked = overline;
 
             // Schedule background updates.
-            InvalidateTab(typographyTab);
+    //        InvalidateTab(typographyTab);
             InvalidatePreview();
         }
 
@@ -1109,33 +1165,10 @@ namespace FontDialogSample
         }
 
         // Mark a specific tab as invalid and schedule background initialization if necessary.
-        private void InvalidateTab(TabItem tab)
-        {
-            TabState tabState;
-            if (_tabDictionary.TryGetValue(tab, out tabState))
-            {
-                if (tabState.IsValid)
-                {
-                    tabState.IsValid = false;
-
-                    if (tabControl.SelectedItem == tab)
-                    {
-                        ScheduleUpdate();
-                    }
-                }
-            }
-        }
+      
 
         // Mark all the tabs as invalid and schedule background initialization of the current tab.
-        private void InvalidateTabs()
-        {
-            foreach (KeyValuePair<TabItem, TabState> item in _tabDictionary)
-            {
-                item.Value.IsValid = false;
-            }
-
-            ScheduleUpdate();
-        }
+        
 
         // Schedule background initialization of the preview control.
         private void InvalidatePreview()
@@ -1196,14 +1229,7 @@ namespace FontDialogSample
             }
             else
             {
-                // Perform any remaining initialization.
-                TabState tab = CurrentTabState;
-                if (tab != null && !tab.IsValid)
-                {
-                    // Initialize the current tab.
-                    tab.InitializeTab();
-                    tab.IsValid = true;
-                }
+                
                 if (!_previewValid)
                 {
                     // Initialize the preview control.
@@ -1235,6 +1261,7 @@ namespace FontDialogSample
 
                 foreach (FontFamilyListItem item in items)
                 {
+                    item.FontSize = 16;
                     fontFamilyList.Items.Add(item);
                 }
             }
@@ -1260,6 +1287,7 @@ namespace FontDialogSample
 
                 foreach (TypefaceListItem item in items)
                 {
+                    item.FontSize = 16;
                     typefaceList.Items.Add(item);
                 }
             }
@@ -1277,7 +1305,7 @@ namespace FontDialogSample
                 SelectTypefaceListItem(typeface);
 
                 // Schedule background updates.
-                InvalidateTabs();
+ 
                 InvalidatePreview();
             }
         }
@@ -1290,7 +1318,7 @@ namespace FontDialogSample
 
             foreach (DependencyProperty property in _chooserProperties)
             {
-                if (property.GetMetadata(typeof(FontChooser)) is TypographicPropertyMetadata)
+                if (property.GetMetadata(typeof(FontGrid)) is TypographicPropertyMetadata)
                 {
                     string displayName = LookupString(property.Name);
                     items[count++] = new TypographicFeatureListItem(displayName, property);
@@ -1301,23 +1329,16 @@ namespace FontDialogSample
 
             for (int i = 0; i < count; ++i)
             {
-                featureList.Items.Add(items[i]);
+                //featureList.Items.Add(items[i]);
             }
         }
 
         private static string LookupString(string tag)
         {
-            return FontDialogSample.Properties.Resources.ResourceManager.GetString(tag, CultureInfo.CurrentUICulture);
+            return Yam.Properties.Resources.ResourceManager.GetString(tag, CultureInfo.CurrentUICulture);
         }
 
-        private TabState CurrentTabState
-        {
-            get
-            {
-                TabState tab;
-                return _tabDictionary.TryGetValue(tabControl.SelectedItem as TabItem, out tab) ? tab : null;
-            }
-        }
+      
 
         private void InitializeSamplesTab()
         {
@@ -1330,8 +1351,8 @@ namespace FontDialogSample
                 SelectedFontStretch
                 );
 
-            fontFamilyNameRun.Text = FontFamilyListItem.GetDisplayName(selectedFamily);
-            typefaceNameRun.Text = TypefaceListItem.GetDisplayName(selectedFace);
+         //   fontFamilyNameRun.Text = FontFamilyListItem.GetDisplayName(selectedFamily);
+        //    typefaceNameRun.Text = TypefaceListItem.GetDisplayName(selectedFace);
 
             // Create FontFamily samples document.
             FlowDocument doc = new FlowDocument();
@@ -1351,16 +1372,14 @@ namespace FontDialogSample
                 doc.Blocks.Add(samplePara);
             }
 
-            fontFamilySamples.Document = doc;
+
 
             // Create typeface samples document.
             doc = new FlowDocument();
             foreach (double sizeInPoints in new double[] { 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0 })
             {
-                string labelText = string.Format("{0} {1}", sizeInPoints, _pointsText);
-                Paragraph labelPara = new Paragraph(new Run(labelText));
-                labelPara.Margin = new Thickness(0);
-                doc.Blocks.Add(labelPara);
+               
+              
 
                 Paragraph samplePara = new Paragraph(new Run(_previewSampleText));
                 samplePara.FontFamily = selectedFamily;
@@ -1372,35 +1391,10 @@ namespace FontDialogSample
                 doc.Blocks.Add(samplePara);
             }
 
-            typefaceSamples.Document = doc;
+         //   typefaceSamples.Document = doc;
         }
 
-        private void InitializeTypographyTab()
-        {
-            if (featureList.Items.IsEmpty)
-            {
-                InitializeFeatureList();
-                featureList.SelectedIndex = 0;
-
-                featureList.SelectionChanged += new SelectionChangedEventHandler(featureList_SelectionChanged);
-            }
-
-            DependencyProperty chooserProperty = null;
-            TypographyFeaturePage featurePage = null;
-
-            TypographicFeatureListItem listItem = featureList.SelectedItem as TypographicFeatureListItem;
-            if (listItem != null)
-            {
-                TypographicPropertyMetadata metadata = listItem.ChooserProperty.GetMetadata(typeof(FontChooser)) as TypographicPropertyMetadata;
-                if (metadata != null)
-                {
-                    chooserProperty = listItem.ChooserProperty;
-                    featurePage = metadata.FeaturePage;
-                }
-            }
-
-            InitializeFeaturePage(typographyFeaturePage, chooserProperty, featurePage);
-        }
+      
 
         private void InitializeFeaturePage(Grid grid, DependencyProperty chooserProperty, TypographyFeaturePage page)
         {
@@ -1413,7 +1407,7 @@ namespace FontDialogSample
             {
                 // Get the property value and metadata.
                 object value = this.GetValue(chooserProperty);
-                TypographicPropertyMetadata metadata = (TypographicPropertyMetadata)chooserProperty.GetMetadata(typeof(FontChooser));
+                TypographicPropertyMetadata metadata = (TypographicPropertyMetadata)chooserProperty.GetMetadata(typeof(FontGrid));
 
                 // Look up the sample text.
                 string sampleText = (metadata.SampleTextTag != null) ? LookupString(metadata.SampleTextTag) :
@@ -1583,14 +1577,14 @@ namespace FontDialogSample
 
                 table.RowGroups.Add(rowGroup);
 
-                fontDescriptionBox.Document = new FlowDocument(table);
+         //       fontDescriptionBox.Document = new FlowDocument(table);
 
-                fontLicenseBox.Text = NameDictionaryHelper.GetDisplayName(glyphTypeface.LicenseDescriptions);
+         //       fontLicenseBox.Text = NameDictionaryHelper.GetDisplayName(glyphTypeface.LicenseDescriptions);
             }
             else
             {
-                fontDescriptionBox.Document = new FlowDocument();
-                fontLicenseBox.Text = String.Empty;
+             //   fontDescriptionBox.Document = new FlowDocument();
+                //fontLicenseBox.Text = String.Empty;
             }
         }
 
@@ -1753,7 +1747,6 @@ namespace FontDialogSample
                 listBox.ScrollIntoView(listBox.Items[i]);
             }
         }
-
         #endregion
     }
 }

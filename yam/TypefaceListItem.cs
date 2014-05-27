@@ -35,11 +35,11 @@ namespace Yam
                 {
                     itemLabel = string.Format(formatString, itemLabel);
                 }
-                catch (ArgumentNullException)
+                catch (Exception)
                 {
-                    //MessageBox.Show("NULL");
-                    itemLabel = "Because NULL ruins everything";
+                    
                 }
+                
                 
             }
 

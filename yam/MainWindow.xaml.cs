@@ -74,7 +74,6 @@ namespace Yam
 
         //Info vars bound to status bar
 
-        public double numLines = 0;  //TODO: Remove this
         private double _numLinesText = 0;
         private string _worldURLText = "Not connected";
 
@@ -416,9 +415,7 @@ namespace Yam
                 
             }
             mudOutputText.Document.Blocks.Add(newPara);
-            mudOutputText.Document.PagePadding = new Thickness(10);
-     
-            numLinesText = numLines;                        
+            mudOutputText.Document.PagePadding = new Thickness(10);                         
         }
         private void link_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
@@ -590,7 +587,7 @@ namespace Yam
                         buffer = String.Empty;
                     }
                 }
-                numLines++;                
+                _numLinesText++;                
             }
             return mudBuffer;     
         }        
@@ -604,39 +601,15 @@ namespace Yam
 
         private void mudOutputText_TextChanged(object sender, EventArgs e)
         {
-            RichTextBox rtb = sender as RichTextBox;
-            //rtb.ScrollToEnd();
-            double dVer = rtb.VerticalOffset;
+            RichTextBox rtb = sender as RichTextBox;            
 
 
-
-            //get the vertical size of the scrollable content area
-
-            double dViewport = rtb.ViewportHeight;
-
-
-
-            //get the vertical size of the visible content area
-
-            double dExtent = rtb.ExtentHeight;
-
-            if (dVer != 0)
+            if ((rtb.VerticalOffset + rtb.ViewportHeight >= rtb.ExtentHeight)
+                || (rtb.ExtentHeight < rtb.ViewportHeight))
             {
-
-                if (dVer + dViewport >= dExtent)
-                   // || rtb.ExtentHeight < rtb.ViewportHeight)
-                    rtb.ScrollToEnd();
-
-                //else MessageBox.Show("It is not at the bottom now");
-
+                rtb.ScrollToEnd();
             }
-
-            else
-            {
-
-                //MessageBox.Show("ActualyIt is at the top now!");
-
-            }
+                    
         }
 
         private void connectToWorld(WorldInfo world)
@@ -733,6 +706,7 @@ namespace Yam
                     string path = window.worldList.SelectedValue.ToString();
                     string[] temparray = path.Split(' ');
 
+                    //Load the selected world if it's in the save file
                     List<WorldInfo> loadedWorlds = new List<WorldInfo>();
                     WorldCollection wc = MainWindow.ReadWorld();
                     loadedWorlds = wc.Worlds;
@@ -898,17 +872,23 @@ namespace Yam
             PreferenceBox fontChooser = new PreferenceBox();
             fontChooser.Owner = this;
 
-            fontChooser.SetPropertiesFromObject(mudOutputText);
+            fontChooser.fontGrid.SetPropertiesFromObject(mudOutputText);
             // fontChooser.PreviewSampleText = "The quick brown fox jumps over the lazy dog.";
 
             if (fontChooser.ShowDialog().Value)
             {
-                fontChooser.ApplyPropertiesToObject(mudOutputText.Document);
+                fontChooser.fontGrid.ApplyPropertiesToObject(mudOutputText.Document);
                 //         MessageBox.Show(FontSizeListItem.PixelsToPoints(fontChooser.SelectedFontSize).ToString());
                 //       mudOutputText.FontSize = fontChooser.SelectedFontSize;
+
+                mudOutputText.Foreground =
+                    new SolidColorBrush(fontChooser.ColorGrid.foreColor.SelectedColor);
+
+                mudOutputText.Background = 
+                    new SolidColorBrush(fontChooser.ColorGrid.backColor.SelectedColor);
                 foreach (Block block in mudOutputText.Document.Blocks)
                 {
-                    block.FontSize = fontChooser.SelectedFontSize;
+                    block.FontSize = fontChooser.fontGrid.SelectedFontSize;                    
                 }
             }
         }
