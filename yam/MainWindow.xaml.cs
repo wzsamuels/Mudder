@@ -72,10 +72,24 @@ namespace Yam
         private Brush defaultColor;
         private bool first_loop = true;
 
+        //Regex
+
+        List<Trigger> triggerList = new List<Trigger>();
+
+        public struct Trigger
+        {
+            public string name;
+            public Regex regex;            
+        }
+
         //Info vars bound to status bar
 
         private double _numLinesText = 0;
         private string _worldURLText = "Not connected";
+
+        // Command history
+        private List<string> commandHistory = new List<string>();
+        private int commandIndex = 0;
 
         public string worldURLText
         {
@@ -142,12 +156,11 @@ namespace Yam
 
             colorsUsed = new Dictionary<Brush, bool>();
             colorsUsed.Add(Brushes.Maroon, false);
-            colorsUsed.Add(Brushes.Ivory, false);
-            //colorsUsed.Add(Brushes.Aquamarine, false);
-            //colorsUsed.Add(Brushes.Aqua, false);
+            colorsUsed.Add(Brushes.Beige, false);
             colorsUsed.Add(Brushes.Aqua, false);
             colorsUsed.Add(Brushes.Orange, false);
             colorsUsed.Add(Brushes.Yellow, false);
+            colorsUsed.Add(Brushes.Tomato, false);
             colorsUsed.Add(Brushes.Olive, false);
             colorsUsed.Add(Brushes.DarkTurquoise, false);
             colorsUsed.Add(Brushes.LimeGreen, false);
@@ -155,9 +168,8 @@ namespace Yam
             colorsUsed.Add(Brushes.RoyalBlue, false);
             colorsUsed.Add(Brushes.Sienna, false);
             colorsUsed.Add(Brushes.Violet, false);
-            colorsUsed.Add(Brushes.Tomato, false);
             
-            numLinesText = 0;
+            numLinesText = 0;            
 
       //      mudOutputText.AddHandler(Hyperlink.RequestNavigateEvent,
           //      new RoutedEventHandler(this.link_RequestNavigate));
@@ -203,8 +215,7 @@ namespace Yam
                 
         // Handle the KeyDown event to determine the type of character entered into the control. 
         private void userInputText_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-
+        {            
             // Send userInputText to connected world on Return
             if (e.Key == Key.Return)
             {
@@ -215,6 +226,8 @@ namespace Yam
                     if (currentWorld.IsConnected)
                     {
                         currentWorld.writeToWorld(prompt);
+                        commandHistory.Add(prompt);
+                        commandIndex = commandHistory.Count - 1;
                         userInputText.Clear();
                         //mudOutputText.ScrollToEnd();
                     }
@@ -230,16 +243,39 @@ namespace Yam
                 
                 e.Handled = true;
             }
-            //Scroll the output up and down instead of the input box
+            //Scroll up throw command history
+            else if(e.Key == Key.Up)
+            {
+
+                if ((commandHistory.Count > 0) && userInputText.CaretIndex == 0)
+                {
+                    userInputText.Clear();
+                    userInputText.Text = commandHistory.ElementAt(commandIndex);
+                  //  MessageBox.Show(commandIndex.ToString());
+                    if (commandIndex != 0)
+                        commandIndex--;
+                }                
+            }
+            else if (e.Key == Key.Down)
+            {
+
+                if ((commandHistory.Count > 0) && userInputText.CaretIndex == 0)
+                {
+                    userInputText.Clear();
+                    userInputText.Text = commandHistory.ElementAt(commandIndex);
+                    //  MessageBox.Show(commandIndex.ToString());
+                    if (commandIndex != commandHistory.Count - 1)
+                        commandIndex++;
+                }
+            }
+            //PageUp/Down should scroll the output up and down instead of the input box
             else if (e.Key == Key.PageUp)
             {
-                numLinesText = 0;
                 mudOutputText.PageUp();
                 e.Handled = true;
             }
             else if (e.Key == Key.PageDown)
             {
-                numLinesText = 0;
                 mudOutputText.PageDown();
                 e.Handled = true;
             }
@@ -255,7 +291,6 @@ namespace Yam
 
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
-            numLinesText = mudOutputText.VerticalOffset;
             if (currentWorld.IsConnected)
             {            
                 ReadFromWorld();
@@ -346,7 +381,17 @@ namespace Yam
             char[] charsToTrim = {'\n', '\r'};
             
             for (int i = 0; i < mudBuffer.Count; i++)
-            {                
+            {
+                //Logging
+                /*
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"log.txt", true))
+                {
+                    file.Write(DateTime.Now.ToString());
+                    file.Write(" ");
+                    file.Write(mudBuffer[i].text);
+                }
+                */
+
                 if (mudBuffer[i].isLink)
                 {                    
                     string linktext = mudBuffer[i].text;
@@ -371,7 +416,7 @@ namespace Yam
                     }
 
                     Hyperlink hlk = new Hyperlink(new Run(linktext));
-
+                    
                     try
                     {
                         //Remove any extra quote marks from around the URL
@@ -401,12 +446,15 @@ namespace Yam
                     //Trim off any extra line break the world adds to the end
                     if (i == mudBuffer.Count - 1)
                     {
+                        
                         text = temp.TrimEnd(charsToTrim);
+                       
                     }
                     else
                     {
                         text = temp;
-                    }
+                    }                    
+
                     newSpan = new Span(new Run(text));
                     newSpan.Foreground = mudBuffer[i].color;
                     newSpan.FontWeight = mudBuffer[i].weight;
@@ -414,8 +462,15 @@ namespace Yam
                 }
                 
             }
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"log.txt", true))
+            {
+                file.Write(DateTime.Now.ToString());
+                file.Write(" ");
+             //   file.Write();
+            }
             mudOutputText.Document.Blocks.Add(newPara);
-            mudOutputText.Document.PagePadding = new Thickness(10);                         
+            //mudOutputText.Document.PagePadding = new Thickness(10);                         
+            numLinesText = _numLinesText;
         }
         private void link_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
@@ -448,11 +503,12 @@ namespace Yam
                         string pattern = @"^(\[.*?\])";
                         string connectPattern = @"^(<.+>)";
                         
-                        Regex channelRgx = new Regex(pattern, RegexOptions.IgnoreCase);
-                        Regex connectRgx = new Regex(connectPattern, RegexOptions.IgnoreCase);
-
+                        Regex channelRgx = new Regex(pattern, RegexOptions.IgnoreCase);                        
                         Match matchText = channelRgx.Match(Text);
-                        Match connectMatch = connectRgx.Match(Text);
+
+                        Regex connectRgx = new Regex(connectPattern, RegexOptions.IgnoreCase);
+                        Match connectMatch = connectRgx.Match(Text);                        
+                        
                         #region Channel name coloring
                         //Detect a channel name with 'pattern' and color
                         
@@ -520,7 +576,7 @@ namespace Yam
                             isMatch = false;
                         }
                         #endregion
-                        //Color <connect> and </disconnect> messages purple
+                        //Color <connect> and </disconnect> messages purple                                                                        
                         else if(connectMatch.Success)
                         {
                             string connectText = connectMatch.Groups[1].Value;
@@ -533,7 +589,7 @@ namespace Yam
                             });
                             result = connectRgx.Replace(Text, "", 1);
                         }
-
+                         
                         string[] words;
 
                         if (result != String.Empty)
@@ -550,9 +606,9 @@ namespace Yam
                                 || (words[i].StartsWith("\"http"))))
                                 //(words[i].StartsWith("www")) || (words[i].StartsWith("\"www")))))
                             {
+                                //Flush the buffer
                                 if (buffer != String.Empty)
                                 {
-                                    //mudOutputText.AppendText(buffer, defaultColor);
                                     mudBuffer.Add(new FormattedText { text = buffer, color = 
                                         defaultColor, isLink = false, weight = FontWeights.Normal});
                                 }
@@ -568,21 +624,41 @@ namespace Yam
 
                                 buffer = String.Empty;
                             }
-                            else
+                            else if(words[i] == "Zach" || words[i] == "You")
                             {
+                                if (buffer != String.Empty)
+                                {
+                                    mudBuffer.Add(new FormattedText { text = buffer, color = defaultColor,
+                                        isLink = false, weight = FontWeights.Normal });
+                                }
+
+                                mudBuffer.Add(new FormattedText { text = words[i], color = Brushes.Green,
+                                    isLink = false, weight = FontWeights.Normal });
+
+                                if (i != words.Length - 1)
+                                {
+                                    mudBuffer.Add(new FormattedText { text = " ", color = Brushes.Green,
+                                        isLink = false, weight = FontWeights.Normal });
+                                }
+
+                                buffer = String.Empty;
+                            }
+                            // Everything else
+                            else
+                            {                                   
                                 buffer += words[i];
                                 if (i != words.Length - 1)
-                                    buffer += " ";
+                                    buffer += " ";                               
                             }
 
                         }
+                        
                         if (buffer != String.Empty)
                         {
-                         //   mudOutputText.AppendText(buffer, defaultColor);
                             mudBuffer.Add(new FormattedText { text = buffer, color = 
                                         defaultColor, isLink = false, weight = FontWeights.Normal});
                         }
-
+                        
                         result = String.Empty;
                         buffer = String.Empty;
                     }
@@ -603,7 +679,8 @@ namespace Yam
         {
             RichTextBox rtb = sender as RichTextBox;            
 
-
+            // When new text is added, scroll down only if already
+            // scrolled to the end
             if ((rtb.VerticalOffset + rtb.ViewportHeight >= rtb.ExtentHeight)
                 || (rtb.ExtentHeight < rtb.ViewportHeight))
             {
@@ -696,10 +773,11 @@ namespace Yam
                         }
                         catch
                         {
-             //               MessageBox.Show("Saving world failed");
+                            MessageBox.Show("Saving world failed");
                         }
                     }
                 }
+                    //Load a saved world
                 else
                 {
                     
@@ -730,15 +808,16 @@ namespace Yam
         }
         private void reconnectMenuItem_Click(object sender, EventArgs e)
         {
-            if (currentWorld.IsConnected)
-            {
+            //if (currentWorld.IsConnected)
+            //{
                 //Try to disconnect
+            mudOutputText.AppendText("\nTrying to disconnect...");
                 if (currentWorld.Disconnect())
                 {
                     mudOutputText.AppendText("\nDisconnected from world", Brushes.Gold);
                     connectToWorld(currentWorldInfo);
                 }
-            }
+            //}
         }
 
         private void findMenuItem_Click(object sender, EventArgs e)
@@ -873,6 +952,13 @@ namespace Yam
             fontChooser.Owner = this;
 
             fontChooser.fontGrid.SetPropertiesFromObject(mudOutputText);
+
+            SolidColorBrush newBrush = (SolidColorBrush)defaultColor;
+            fontChooser.ColorGrid.foreColor.SelectedColor = newBrush.Color;
+
+            newBrush = (SolidColorBrush)mudOutputText.Background;
+            fontChooser.ColorGrid.backColor.SelectedColor = newBrush.Color;
+
             // fontChooser.PreviewSampleText = "The quick brown fox jumps over the lazy dog.";
 
             if (fontChooser.ShowDialog().Value)
@@ -881,13 +967,15 @@ namespace Yam
                 //         MessageBox.Show(FontSizeListItem.PixelsToPoints(fontChooser.SelectedFontSize).ToString());
                 //       mudOutputText.FontSize = fontChooser.SelectedFontSize;
 
-                mudOutputText.Foreground =
+                defaultColor =
                     new SolidColorBrush(fontChooser.ColorGrid.foreColor.SelectedColor);
 
                 mudOutputText.Background = 
                     new SolidColorBrush(fontChooser.ColorGrid.backColor.SelectedColor);
+              
                 foreach (Block block in mudOutputText.Document.Blocks)
                 {
+                    block.Foreground = defaultColor;
                     block.FontSize = fontChooser.fontGrid.SelectedFontSize;                    
                 }
             }
