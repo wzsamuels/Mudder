@@ -59,6 +59,9 @@ namespace Yam
             this.Close();
         }
 
+        private void ColorGrid_Loaded(object sender, RoutedEventArgs e)
+        {
 
+        }
     }
 }

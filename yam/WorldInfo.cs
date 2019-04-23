@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Windows;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Yam
 {
@@ -17,8 +11,6 @@ namespace Yam
         private string _username = String.Empty;
         private string _password = String.Empty;
         private bool _autoLogin = false;
-
-       
 
         public string WorldName
         {

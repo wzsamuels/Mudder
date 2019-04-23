@@ -1,11 +1,5 @@
 using System;
-using System.Text;
-using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Markup;
-using System.Globalization;
 
 namespace Yam
 {

@@ -21,7 +21,7 @@
         <local:FontGrid x:Name="fontGrid" Grid.Column="1" Grid.Row="0"  HorizontalAlignment="Stretch" 
                          Margin="10,0,55,0" VerticalAlignment="Stretch" Width="auto"  Height="467"></local:FontGrid>
         <local:ColorGrid x:Name="ColorGrid" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch" 
-                         Margin="10,0,55,0" VerticalAlignment="Stretch" Width="auto" Height="467"/>
+                         Margin="10,0,55,0" VerticalAlignment="Stretch" Width="auto" Height="467" Loaded="ColorGrid_Loaded"/>
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10,10,30,10">
             <Button Content="OK" Margin="0,0,10,0" Width="86" IsDefault="True" Click="OnOKButtonClicked"/>
             <Button Content="Cancel" Width="86" Click="OnCancelButtonClicked"/>

@@ -43,6 +43,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Timers;
 using System.Windows.Threading;
+using System.Xml.Serialization;
 
 namespace Yam
 {
@@ -56,8 +57,9 @@ namespace Yam
         private asyncConnect currentWorld = new asyncConnect();       
         private WorldInfo currentWorldInfo = new WorldInfo();
         public static RoutedCommand openWorldCommand = new RoutedCommand();
-        
-        private const string configFile = "world_data";
+
+        private static readonly string ConfigFile1
+            = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"Yam","world.cfg");
         //Timer to read from open world
         private readonly System.Timers.Timer _readTimer;
 
@@ -111,6 +113,10 @@ namespace Yam
                 this.OnPropertyChanged("numLinesText");
             }
         }
+
+        //public static string ConfigFile => ConfigFile1;
+
+       // public static string ConfigFile1 => configFile;
 
         // Text and its color
         public struct ColoredText
@@ -202,7 +208,7 @@ namespace Yam
         
         
         
-      #region INotifyPropertyChanged Members
+        #region INotifyPropertyChanged Members
 
 		public event PropertyChangedEventHandler PropertyChanged;
 		protected void OnPropertyChanged(string strPropertyName)
@@ -210,9 +216,8 @@ namespace Yam
 			if (PropertyChanged != null)
 				PropertyChanged(this, new PropertyChangedEventArgs(strPropertyName));
 		}
+        #endregion
 
-		#endregion
-                
         // Handle the KeyDown event to determine the type of character entered into the control. 
         private void userInputText_PreviewKeyDown(object sender, KeyEventArgs e)
         {            
@@ -462,12 +467,18 @@ namespace Yam
                 }
                 
             }
+
+            // Logging - totally broken!
+
+            /*
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"log.txt", true))
             {
                 file.Write(DateTime.Now.ToString());
                 file.Write(" ");
              //   file.Write();
             }
+            */
+
             mudOutputText.Document.Blocks.Add(newPara);
             //mudOutputText.Document.PagePadding = new Thickness(10);                         
             numLinesText = _numLinesText;
@@ -680,7 +691,7 @@ namespace Yam
             RichTextBox rtb = sender as RichTextBox;            
 
             // When new text is added, scroll down only if already
-            // scrolled to the end
+            // scrolled to the end (otherwise the user is reading scrollback)
             if ((rtb.VerticalOffset + rtb.ViewportHeight >= rtb.ExtentHeight)
                 || (rtb.ExtentHeight < rtb.ViewportHeight))
             {
@@ -724,9 +735,10 @@ namespace Yam
 
                         currentWorld.writeToWorld(loginString);                        
                     }
-                    //Enable timer that reads from world
+                    
                     reconnectWorldMenuItem.IsEnabled = true;
                     disconnectWorldMenuItem.IsEnabled = true;
+                    //Enable timer that reads from world
                     _readTimer.Enabled = true;
                 }
                 else
@@ -756,6 +768,7 @@ namespace Yam
         private void OpenWorld()
         {
             var window = new newWorld { Owner = this };
+            window.newWorldSelect = true;
             Nullable<bool> result = window.ShowDialog();
 
             if (result.HasValue && result.Value)
@@ -765,16 +778,9 @@ namespace Yam
                     currentWorldInfo = window.WorldInfo;
                     if (window.saveLogin)
                     {
-                        WorldInfo tempWorld = new WorldInfo();
-                        tempWorld = window.WorldInfo;
-                        try
-                        {
-                            WriteWorld(tempWorld);
-                        }
-                        catch
-                        {
-                            MessageBox.Show("Saving world failed");
-                        }
+                        //WorldInfo tempWorld = new WorldInfo();
+                        //tempWorld = window.WorldInfo;
+                        WriteWorld(currentWorldInfo);
                     }
                 }
                     //Load a saved world
@@ -803,7 +809,7 @@ namespace Yam
         }
         
         private void saveWorldMenuItem_Click(object sender, EventArgs e)
-        {
+        {                   
             WriteWorld(currentWorldInfo);
         }
         private void reconnectMenuItem_Click(object sender, EventArgs e)
@@ -818,36 +824,6 @@ namespace Yam
                     connectToWorld(currentWorldInfo);
                 }
             //}
-        }
-
-        private void findMenuItem_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Not implemented yet");
-            FindAndReplaceManager frm;
-            TextRange selectedText = new TextRange(mudOutputText.Document.ContentStart,
-                mudOutputText.Document.ContentEnd);
-
-            frm = new FindAndReplaceManager(mudOutputText.Document);
-            Loaded += (s, f) =>
-            {
-                SearchWindow searchWindow = new SearchWindow();
-                searchWindow.SearchText += (sT, fT) =>
-                {
-                    mudOutputText.Focus();
-                    mudOutputText.SetValue(TextElement.BackgroundProperty, null);
-                    if (null != selectedText) selectedText.ApplyPropertyValue(TextElement.BackgroundProperty, null);
-                    var tr = frm.FindNext(fT.Text, FindOptions.None);
-                    if (null != tr)
-                    {
-                        tr.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Yellow);
-                        selectedText = tr;
-                    }
-                    searchWindow.FocusFind();
-                };
-                searchWindow.Show();
-
-            };
-
         }
         private void disconnectMenuItem_Click(object sender, EventArgs e)
         {
@@ -893,54 +869,95 @@ namespace Yam
 
         public static void WriteWorld(WorldInfo data)
         {
-            WorldCollection tempwc = ReadWorld();
+            //Test to see if config directory exists and create if not
+            if (!Directory.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")))
+            {
+                MessageBox.Show(string.Format("Creating dir {0}", System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")));
+                try
+                {
+                    Directory.CreateDirectory(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));
+                }
+                catch
+                {
+                    MessageBox.Show("Could not create directory!\nNot able to save file!");               
+                }
+            }
+            WorldCollection tempwc = new WorldCollection();
+            ///If there's already saved worlds, load them
+            if (File.Exists(ConfigFile1))
+            {
+                tempwc = ReadWorld();
+            }
+            
+            XmlSerializer wcSerializer =
+                 new XmlSerializer(typeof(WorldCollection));
+            StreamWriter wcWriter = null; 
+            try
+            {
+                wcWriter = new StreamWriter(ConfigFile1);
+                tempwc.AddWorld(data); //Add world to list (not overwriting)
+                wcSerializer.Serialize(wcWriter, tempwc);
+            }
+            catch (FileNotFoundException)
+            {
+                MessageBox.Show("Config file not found");
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("An I/O error has occurred.");
+            }
+            catch (OutOfMemoryException)
+            {
+                MessageBox.Show("There is insufficient memory to read the file.");
+            }
+            finally
+            {
+                if (wcWriter != null) wcWriter.Dispose();
+            }
 
-            System.Xml.Serialization.XmlSerializer writer =
-                 new System.Xml.Serialization.XmlSerializer(tempwc.GetType());
-            System.IO.StreamWriter file =
-               new System.IO.StreamWriter(configFile);
+            //Make sure the target directory exists, otherwise create it
+            /* */
 
-            tempwc.AddWorld(data);
-            writer.Serialize(file, tempwc);
 
-            file.Close();
+            //   file.Close();
         }
 
         public static WorldCollection ReadWorld()
         {
-            WorldCollection data = new WorldCollection();
+            WorldCollection data = new WorldCollection();     
 
-            System.Xml.Serialization.XmlSerializer reader = new
-                System.Xml.Serialization.XmlSerializer(data.GetType());
 
-            // Read the XML file.
-            System.IO.StreamReader file =
-                   new System.IO.StreamReader(Stream.Null);
-
-            bool FileExists = File.Exists(configFile);
-            if (FileExists)
-            {
+            //WorldCollection data = null;
+            var wcSerializer = new XmlSerializer(typeof(WorldCollection));
+            StreamReader wcReader = null;
+            try
+            { 
+                wcReader = new StreamReader(ConfigFile1);
                 try
                 {
-                    file = new System.IO.StreamReader(configFile);
+                    // Deserialize the content of the file 
+                    data = (WorldCollection)wcSerializer.Deserialize(wcReader);
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show("Error reading file");
-                }
-
-                // Deserialize the content of the file 
-                try
-                {
-                    data = (WorldCollection)reader.Deserialize(file);
-                }
-                catch (Exception)
-                {
-                    MessageBox.Show("Error with Deserialize");
+                    _ = MessageBox.Show("Error with Deserialize");
                 }
             }
-            file.Close();
-
+            catch (FileNotFoundException) {
+                MessageBox.Show("Error reading file");
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("An I/O error has occurred.");
+            }
+            catch (OutOfMemoryException)
+            {
+                MessageBox.Show("There is insufficient memory to read the file.");
+            }
+            finally
+            {
+                if (wcReader != null) wcReader.Dispose();
+            }
             return data;
         }
 

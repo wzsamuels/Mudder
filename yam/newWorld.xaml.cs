@@ -17,19 +17,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Collections.ObjectModel;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Yam
 {
@@ -60,7 +51,7 @@ namespace Yam
 
             WorldCollection wc = MainWindow.ReadWorld();
             loadedWorlds = wc.Worlds;
-
+            
             if (loadedWorlds != null)
             {
                 foreach (WorldInfo world in loadedWorlds)
@@ -72,12 +63,20 @@ namespace Yam
                     listItems.Add(worldItem);
                 }
                 worldList.ItemsSource = listItems;
+                //If there are saved worlds, assume the user
+                //Wants to open one
                 if (worldList.Items.Count > 0)
                 {
                     worldList.SelectedIndex = 0;
                     savedWorldButton.IsChecked = true;
                     worldList.Focus();
-                }               
+                }
+                //Otherwise default to a new world
+                else
+                {
+                    newWorldButton.IsChecked = true;
+                    worldNameText.Focus();
+                }
             }
             else
             {
@@ -187,6 +186,7 @@ namespace Yam
 
                 if (worldPortText.Text.Trim().Length > 0)
                 {
+                    //Let's make sure the user actually entered a number for the port
                     try
                     {
                         worldPortTemp = Convert.ToInt32(worldPortText.Text.Trim());

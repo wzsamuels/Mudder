@@ -155,7 +155,6 @@
     </Compile>
     <Compile Include="WorldCollection.cs" />
     <Compile Include="WorldInfo.cs" />
-    <Compile Include="XmlExtensions.cs" />
     <Page Include="About.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

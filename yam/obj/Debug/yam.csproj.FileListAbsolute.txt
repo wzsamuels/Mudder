@@ -63,3 +63,142 @@ C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\FontGrid.baml
 C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\FontGrid.g.cs
 C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\ColorGrid.baml
 C:\Users\William\Documents\GitHub\yam\yam\obj\Debug\ColorGrid.g.cs
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Yam.exe.config
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Yam.exe
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Yam.pdb
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Yam.exe.CodeAnalysisLog.xml
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Yam.exe.lastcodeanalysissucceeded
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Aero.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Metro.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.VS2010.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Xceed.Wpf.DataGrid.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\Xceed.Wpf.Toolkit.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\de\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\es\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\fr\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\hu\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\it\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\pt-BR\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\ro\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\ru\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\sv\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\bin\Debug\zh-Hans\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\William\OneDrive\yam\yam\obj\Debug\About.baml
+C:\Users\William\OneDrive\yam\yam\obj\Debug\FontGrid.baml
+C:\Users\William\OneDrive\yam\yam\obj\Debug\newWorld.baml
+C:\Users\William\OneDrive\yam\yam\obj\Debug\ColorGrid.baml
+C:\Users\William\OneDrive\yam\yam\obj\Debug\SearchWindow.baml
+C:\Users\William\OneDrive\yam\yam\obj\Debug\App.baml
+C:\Users\William\OneDrive\yam\yam\obj\Debug\About.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\FontGrid.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\MainWindow.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\newWorld.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\PreferenceBox.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\ColorGrid.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\SearchWindow.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\App.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\William\OneDrive\yam\yam\obj\Debug\Yam_MarkupCompile.cache
+C:\Users\William\OneDrive\yam\yam\obj\Debug\Yam_MarkupCompile.lref
+C:\Users\William\OneDrive\yam\yam\obj\Debug\MainWindow.baml
+C:\Users\William\OneDrive\yam\yam\obj\Debug\PreferenceBox.baml
+C:\Users\William\OneDrive\yam\yam\obj\Debug\Yam.g.resources
+C:\Users\William\OneDrive\yam\yam\obj\Debug\Yam.Properties.Resources.resources
+C:\Users\William\OneDrive\yam\yam\obj\Debug\yam.csproj.GenerateResource.Cache
+C:\Users\William\OneDrive\yam\yam\obj\Debug\Yam.exe
+C:\Users\William\OneDrive\yam\yam\obj\Debug\Yam.pdb
+F:\Drive\yam\yam\bin\Debug\Yam.exe.config
+F:\Drive\yam\yam\bin\Debug\Yam.exe
+F:\Drive\yam\yam\bin\Debug\Yam.pdb
+F:\Drive\yam\yam\bin\Debug\Yam.exe.CodeAnalysisLog.xml
+F:\Drive\yam\yam\bin\Debug\Yam.exe.lastcodeanalysissucceeded
+F:\Drive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.dll
+F:\Drive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Aero.dll
+F:\Drive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Metro.dll
+F:\Drive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.VS2010.dll
+F:\Drive\yam\yam\bin\Debug\Xceed.Wpf.DataGrid.dll
+F:\Drive\yam\yam\bin\Debug\Xceed.Wpf.Toolkit.dll
+F:\Drive\yam\yam\bin\Debug\de\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\es\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\fr\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\hu\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\it\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\pt-BR\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\ro\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\ru\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\sv\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\bin\Debug\zh-Hans\Xceed.Wpf.AvalonDock.resources.dll
+F:\Drive\yam\yam\obj\Debug\yam.csprojResolveAssemblyReference.cache
+F:\Drive\yam\yam\obj\Debug\About.baml
+F:\Drive\yam\yam\obj\Debug\FontGrid.baml
+F:\Drive\yam\yam\obj\Debug\newWorld.baml
+F:\Drive\yam\yam\obj\Debug\ColorGrid.baml
+F:\Drive\yam\yam\obj\Debug\SearchWindow.baml
+F:\Drive\yam\yam\obj\Debug\App.baml
+F:\Drive\yam\yam\obj\Debug\About.g.cs
+F:\Drive\yam\yam\obj\Debug\FontGrid.g.cs
+F:\Drive\yam\yam\obj\Debug\MainWindow.g.cs
+F:\Drive\yam\yam\obj\Debug\newWorld.g.cs
+F:\Drive\yam\yam\obj\Debug\PreferenceBox.g.cs
+F:\Drive\yam\yam\obj\Debug\ColorGrid.g.cs
+F:\Drive\yam\yam\obj\Debug\SearchWindow.g.cs
+F:\Drive\yam\yam\obj\Debug\App.g.cs
+F:\Drive\yam\yam\obj\Debug\GeneratedInternalTypeHelper.g.cs
+F:\Drive\yam\yam\obj\Debug\Yam_MarkupCompile.cache
+F:\Drive\yam\yam\obj\Debug\Yam_MarkupCompile.lref
+F:\Drive\yam\yam\obj\Debug\MainWindow.baml
+F:\Drive\yam\yam\obj\Debug\PreferenceBox.baml
+F:\Drive\yam\yam\obj\Debug\Yam.g.resources
+F:\Drive\yam\yam\obj\Debug\Yam.Properties.Resources.resources
+F:\Drive\yam\yam\obj\Debug\yam.csproj.GenerateResource.Cache
+F:\Drive\yam\yam\obj\Debug\Yam.exe
+F:\Drive\yam\yam\obj\Debug\Yam.pdb
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Yam.exe.config
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Yam.exe
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Yam.pdb
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Yam.exe.CodeAnalysisLog.xml
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Yam.exe.lastcodeanalysissucceeded
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Aero.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Metro.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.VS2010.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Xceed.Wpf.DataGrid.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\Xceed.Wpf.Toolkit.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\de\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\es\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\fr\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\hu\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\it\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\pt-BR\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\ro\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\ru\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\sv\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\bin\Debug\zh-Hans\Xceed.Wpf.AvalonDock.resources.dll
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\About.baml
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\FontGrid.baml
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\newWorld.baml
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\ColorGrid.baml
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\SearchWindow.baml
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\App.baml
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\About.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\FontGrid.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\MainWindow.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\newWorld.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\PreferenceBox.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\ColorGrid.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\SearchWindow.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\App.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\GeneratedInternalTypeHelper.g.cs
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\Yam_MarkupCompile.cache
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\Yam_MarkupCompile.lref
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\MainWindow.baml
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\PreferenceBox.baml
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\Yam.g.resources
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\Yam.Properties.Resources.resources
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\yam.csproj.GenerateResource.cache
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\yam.csproj.CoreCompileInputs.cache
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\yam.csproj.CopyComplete
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\Yam.exe
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\Yam.pdb
+C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\yam.csprojAssemblyReference.cache
