@@ -42,9 +42,9 @@
                 <MenuItem Header="_Paste" Command="Paste"/>
                 <Separator/>
                 <MenuItem x:Name="findMenuItem" Header="_Find" Command="Find"/>
+                <MenuItem Header="Clear" HorizontalAlignment="Left" Click="clearMenuItem_Click"/>
             </MenuItem>
-                <MenuItem Header="_Tools">
-            <!--<MenuItem Header="_Change Font" Click="fontMenuItem_Click"/>-->
+            <MenuItem Header="_Tools">
                 <MenuItem Header="_Preferences" Click="PrefMenuItem_Click"/>
             </MenuItem>
             <!--
@@ -77,7 +77,7 @@
                         <!--VerticalScrollBarVisibility="Visible"-->
                         <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
                            ScrollViewer.VerticalScrollBarVisibility="Auto" IsDocumentEnabled="True" IsReadOnly="True"
-                        FontSize="16" Background="Black" Foreground="#BEBEBE" TextChanged="mudOutputText_TextChanged"
+                        FontSize="16" Background="Black" Foreground="#BEBEBE" TextChanged="MudOutputText_TextChanged"
                         FontFamily = "DejaVu Sans Mono, Courier New">
                             <RichTextBox.Resources>
                                 <Style TargetType="{x:Type Paragraph}">

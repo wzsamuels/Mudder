@@ -120,17 +120,6 @@
     <Compile Include="About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CustomCommands.cs" />
-    <Compile Include="FindAndReplaceManager.cs" />
-    <Compile Include="FontFamilyListItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="FontGrid.xaml.cs">
-      <DependentUpon>FontGrid.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FontSizeListItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -138,28 +127,12 @@
     <Compile Include="NameDictionaryHelper.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="PreferenceBox.xaml.cs">
-      <DependentUpon>PreferenceBox.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ColorGrid.xaml.cs">
-      <DependentUpon>ColorGrid.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="SearchWindow.xaml.cs">
-      <DependentUpon>SearchWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="TypefaceListItem.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="TypographicFeatureListItem.cs">
-      <SubType>Code</SubType>
+    <Compile Include="PreferencesWindow.xaml.cs">
+      <DependentUpon>PreferencesWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="WorldCollection.cs" />
     <Compile Include="WorldInfo.cs" />
     <Page Include="About.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FontGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -176,15 +149,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="PreferenceBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ColorGrid.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="SearchWindow.xaml">
+    <Page Include="PreferencesWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

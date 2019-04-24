@@ -66,7 +66,6 @@ namespace Yam
 
         //Drawing the output RTB
         List<string> mudBufferGlobal = new List<string>();
-        private bool _displayUpdatePending = false;
 
         //Variables for channel coloring
         private List<ColoredText> channelList = new List<ColoredText>();
@@ -369,10 +368,7 @@ namespace Yam
 
         // This updates mudOutputText
         private void DrawOutput(List<FormattedText> mudBuffer)
-        {
-            _displayUpdatePending = false;
-
-           
+        {       
             //Use newPara and newSpan for buffering
             Paragraph newPara = new Paragraph();
             Span newSpan = new Span();
@@ -440,7 +436,7 @@ namespace Yam
                     {
                         hlk.NavigateUri = new Uri("http://something.went.wrong");
                     }
-                    hlk.RequestNavigate += new RequestNavigateEventHandler(link_RequestNavigate);
+                    hlk.RequestNavigate += new RequestNavigateEventHandler(Link_RequestNavigate);
                     newPara.Inlines.Add(hlk);
                 }
                 else
@@ -483,7 +479,7 @@ namespace Yam
             //mudOutputText.Document.PagePadding = new Thickness(10);                         
             numLinesText = _numLinesText;
         }
-        private void link_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        private void Link_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             var hyperlink = (Hyperlink)sender;
             Process.Start(hyperlink.NavigateUri.ToString());
@@ -635,7 +631,8 @@ namespace Yam
 
                                 buffer = String.Empty;
                             }
-                            else if(words[i] == "Zach" || words[i] == "You")
+                            
+                            else if(words[i] == currentWorldInfo.Username || words[i] == "You")
                             {
                                 if (buffer != String.Empty)
                                 {
@@ -686,7 +683,7 @@ namespace Yam
         /// <param name="e"></param>
 
 
-        private void mudOutputText_TextChanged(object sender, EventArgs e)
+        private void MudOutputText_TextChanged(object sender, EventArgs e)
         {
             RichTextBox rtb = sender as RichTextBox;            
 
@@ -728,9 +725,9 @@ namespace Yam
 
                     if (world.AutoLogin)
                     {
-                        string loginString = String.Empty;
+                        //string loginString = String.Empty;
 
-                        loginString = "connect " + world.Username + " " +
+                        string loginString = "connect " + world.Username + " " +
                             world.Password + "\n";
 
                         currentWorld.writeToWorld(loginString);                        
@@ -749,9 +746,7 @@ namespace Yam
                 }
             }
             else                
-                mudOutputText.AppendText("\nAlready connected to a world", Brushes.Gold);
-
-           
+                mudOutputText.AppendText("\nAlready connected to a world", Brushes.Gold);           
         }
         #region Main Menu
 
@@ -960,45 +955,44 @@ namespace Yam
             }
             return data;
         }
-
+        #region Edit Menu Click Code
         private void PrefMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            System.Windows.Forms.FontDialog fd = 
+                new System.Windows.Forms.FontDialog();
 
 
-            PreferenceBox fontChooser = new PreferenceBox();
-            fontChooser.Owner = this;
+            
+            System.ComponentModel.TypeConverter converter =
+                System.ComponentModel.TypeDescriptor.GetConverter(typeof(System.Drawing.Font));
 
-            fontChooser.fontGrid.SetPropertiesFromObject(mudOutputText);
+            string tmpstring = string.Format("{0}, {1}", mudOutputText.Document.FontFamily.ToString().Split(',')[0],
+                mudOutputText.Document.FontSize.ToString());
+            //MessageBox.Show(tmpstring);
+            System.Drawing.Font font1 = (System.Drawing.Font)converter.ConvertFromString(tmpstring);
+            fd.Font = font1;
 
-            SolidColorBrush newBrush = (SolidColorBrush)defaultColor;
-            fontChooser.ColorGrid.foreColor.SelectedColor = newBrush.Color;
-
-            newBrush = (SolidColorBrush)mudOutputText.Background;
-            fontChooser.ColorGrid.backColor.SelectedColor = newBrush.Color;
-
-            // fontChooser.PreviewSampleText = "The quick brown fox jumps over the lazy dog.";
-
-            if (fontChooser.ShowDialog().Value)
+            //fd.Color = textBox1.ForeColor;
+            fd.ShowColor = true; //Enable choosing text color
+            var result = fd.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
             {
-                fontChooser.fontGrid.ApplyPropertiesToObject(mudOutputText.Document);
-                //         MessageBox.Show(FontSizeListItem.PixelsToPoints(fontChooser.SelectedFontSize).ToString());
-                //       mudOutputText.FontSize = fontChooser.SelectedFontSize;
-
-                defaultColor =
-                    new SolidColorBrush(fontChooser.ColorGrid.foreColor.SelectedColor);
-
-                mudOutputText.Background = 
-                    new SolidColorBrush(fontChooser.ColorGrid.backColor.SelectedColor);
-              
-                foreach (Block block in mudOutputText.Document.Blocks)
-                {
-                    block.Foreground = defaultColor;
-                    block.FontSize = fontChooser.fontGrid.SelectedFontSize;                    
-                }
+                //MessageBox.Show(String.Format("Font: {0}", fd.Font));
+                mudOutputText.Document.FontFamily = new FontFamily(fd.Font.Name);
+                mudOutputText.Document.FontSize = fd.Font.Size;// * 96.0 / 72.0;
+                defaultColor = 
+                    new SolidColorBrush(Color.FromArgb(fd.Color.A, fd.Color.R, fd.Color.G, fd.Color.B));
             }
+            //mudOutputText.Document.FontWeight = fd.Font.Bold ? FontWeights.Bold : FontWeights.Regular;
+            //mudOutputText.Document.FontStyle = fd.Font.Italic? FontStyles.Italic: FontStyles.Normal;
         }
+        
 
-       
+        private void clearMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            mudOutputText.Document.Blocks.Clear();
+        }
+        #endregion
     }
 }
 

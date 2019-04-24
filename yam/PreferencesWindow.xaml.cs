@@ -10,17 +10,17 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace Yam
 {
     /// <summary>
-    /// Interaction logic for prefGrid.xaml
+    /// Interaction logic for PreferencesWindow.xaml
     /// </summary>
-    public partial class ColorGrid : UserControl
+    public partial class PreferencesWindow : Window
     {
-        public ColorGrid()
+
+        public PreferencesWindow()
         {
             InitializeComponent();
         }

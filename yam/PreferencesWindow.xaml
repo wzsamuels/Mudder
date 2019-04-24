@@ -1,0 +1,27 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Yam"
+        xmlns:System="clr-namespace:System;assembly=mscorlib" x:Class="Yam.PreferencesWindow"
+        mc:Ignorable="d"
+        Title="PreferencesWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0">
+            <ListBox DockPanel.Dock="Top" Height="50">
+                <System:String>Top</System:String>
+            </ListBox>
+            <Button DockPanel.Dock="Bottom" Height="50" Content="Bottom"/>
+            <Button DockPanel.Dock="Left" Width="50" Content="Left"/>
+            <Button DockPanel.Dock="Right" Width="50" Content="Right"/>
+            <Button Content="Center"/>
+        </DockPanel>
+        <ListBox Grid.Row="1"></ListBox>
+
+    </Grid>
+</Window>
