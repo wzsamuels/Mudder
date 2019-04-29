@@ -50,11 +50,11 @@ namespace Yam
         public StringBuilder sb = new StringBuilder();
     }
 
-    public class AsyncConnect
+    public class AsyncConnect : IDisposable
     {
 
         // The response from the remote device.
-        private static String response = String.Empty;
+        private static string response = string.Empty;
 
         public TcpClient client = new TcpClient();
         private static ManualResetEvent connectDone =
@@ -64,6 +64,7 @@ namespace Yam
             new ManualResetEvent(false);
         private static ManualResetEvent receiveDone =
             new ManualResetEvent(false);
+        bool disposed = false;
 
         public AsyncConnect()
         {
@@ -118,10 +119,7 @@ namespace Yam
         public string Read()
         {
             StringBuilder myCompleteMessage = new StringBuilder();
-            string stringBuffer = String.Empty;
-            int numberOfBytesRead = 0;
             NetworkStream stream = client.GetStream();
-
             try
             {
 
@@ -133,7 +131,7 @@ namespace Yam
                     {
                         //byte[] myReadBuffer = new byte[4096];
                         byte[] myReadBuffer = new byte[1024];
-                        numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                        int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
 
                         myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
 
@@ -190,7 +188,7 @@ namespace Yam
                 return false;
         }
 
-        public void writeToWorld(string data)
+        public void WriteToWorld(string data)
         {
             //Send(client, data);
             //sendDone.WaitOne();
@@ -199,6 +197,29 @@ namespace Yam
             stream.Write(byteData, 0, byteData.Length);
             byte[] newline = Encoding.UTF8.GetBytes("\n");
             stream.Write(newline, 0, newline.Length);
+        }
+        public void Dispose()
+        {
+
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        // Protected implementation of Dispose pattern.
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                client.GetStream().Close();
+                client.Close();
+                //curr
+                // Free any other managed objects here.
+                //
+            }
+            disposed = true;
         }
     }
 }

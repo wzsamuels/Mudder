@@ -37,7 +37,7 @@ namespace Yam {
     /// <summary>
     /// newWorld
     /// </summary>
-    public partial class newWorld : System.Windows.Window, System.Windows.Markup.IComponentConnector {
+    public partial class NewWorld : System.Windows.Window, System.Windows.Markup.IComponentConnector {
         
         
         #line 14 "..\..\newWorld.xaml"
@@ -245,7 +245,7 @@ namespace Yam {
             this.okNewWorldButton = ((System.Windows.Controls.Button)(target));
             
             #line 106 "..\..\newWorld.xaml"
-            this.okNewWorldButton.Click += new System.Windows.RoutedEventHandler(this.okNewWorldButton_Click);
+            this.okNewWorldButton.Click += new System.Windows.RoutedEventHandler(this.OkNewWorldButton_Click);
             
             #line default
             #line hidden
@@ -254,7 +254,7 @@ namespace Yam {
             this.cancelNewWorldButton = ((System.Windows.Controls.Button)(target));
             
             #line 109 "..\..\newWorld.xaml"
-            this.cancelNewWorldButton.Click += new System.Windows.RoutedEventHandler(this.cancelNewWorldButton_Click);
+            this.cancelNewWorldButton.Click += new System.Windows.RoutedEventHandler(this.CancelNewWorldButton_Click);
             
             #line default
             #line hidden

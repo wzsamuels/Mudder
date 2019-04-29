@@ -102,7 +102,7 @@ namespace Yam
                 this.OnPropertyChanged("worldURLText");
             }
         }
-        public double numLinesText
+        public double NumLinesText
         {
             get { return _numLinesText; }
             set
@@ -140,8 +140,8 @@ namespace Yam
             userInputText.Focus();
             userInputText.Clear();
 
-            disconnectWorldMenuItem.IsEnabled = false;
-            reconnectWorldMenuItem.IsEnabled = false;
+            DisconnectWorldMenuItem.IsEnabled = false;
+            ReconnectWorldMenuItem.IsEnabled = false;
 
             //For getting data from world
             _readTimer = new System.Timers.Timer(10);
@@ -169,17 +169,12 @@ namespace Yam
                 { Brushes.Violet, false }
             };
 
-            numLinesText = 0;
+            NumLinesText = 0;
 
             // attach CommandBinding to root window 
             CommandBinding openWorldCommandBinding = new CommandBinding(
-            openWorldCommand, openWorldMenuItem_Command, openWorldCanExecute);
+            openWorldCommand, OpenWorldMenuItem_Command, OpenWorldCanExecute);
             this.CommandBindings.Add(openWorldCommandBinding);
-
-            cutMenu.Icon = new System.Windows.Controls.Image
-            {
-                Source = new BitmapImage(new Uri("Resources\\cut.png", UriKind.Relative))
-            };
 
             KeyGesture openWorldGesture = new KeyGesture(
                 Key.O, ModifierKeys.Control);
@@ -215,22 +210,20 @@ namespace Yam
             if (disposing)
             {
                 _readTimer.Dispose();
+                currentWorld.Dispose();
                 // Free any other managed objects here.
                 //
             }
             disposed = true;
         }
 
-    #region INotifyPropertyChanged Members
+        #region INotifyPropertyChanged Members
 
-    public event PropertyChangedEventHandler PropertyChanged;
-		protected void OnPropertyChanged(string strPropertyName)
-		{
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(strPropertyName));
-            }
-		}
+        public event PropertyChangedEventHandler PropertyChanged;
+	    protected void OnPropertyChanged(string strPropertyName)
+	    {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(strPropertyName));
+        }
         #endregion
 
         // Handle the KeyDown event to determine the type of character entered into the control. 
@@ -245,7 +238,7 @@ namespace Yam
                 {
                     if (currentWorld.IsConnected)
                     {
-                        currentWorld.writeToWorld(prompt);
+                        currentWorld.WriteToWorld(prompt);
                         commandHistory.Add(prompt);
                         commandIndex = commandHistory.Count - 1;
                         userInputText.Clear();
@@ -317,12 +310,11 @@ namespace Yam
                 // Read mud output             
         private void ReadFromWorld()
         {
-            string buffer = String.Empty;
             List<string> fromBuffer = new List<string>();
             if (currentWorld.IsConnected)
             {
                 _readTimer.Enabled = false;
-                buffer = currentWorld.Read();
+                string buffer = currentWorld.Read();
 
                 if (buffer != String.Empty)
                 {
@@ -492,7 +484,7 @@ namespace Yam
 
             mudOutputText.Document.Blocks.Add(newPara);
             //mudOutputText.Document.PagePadding = new Thickness(10);                         
-            numLinesText = _numLinesText;
+            NumLinesText = _numLinesText;
         }
         private void Link_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
@@ -745,11 +737,11 @@ namespace Yam
                         string loginString = "connect " + world.Username + " " +
                             world.Password + "\n";
 
-                        currentWorld.writeToWorld(loginString);                        
+                        currentWorld.WriteToWorld(loginString);                        
                     }
                     
-                    reconnectWorldMenuItem.IsEnabled = true;
-                    disconnectWorldMenuItem.IsEnabled = true;
+                    ReconnectWorldMenuItem.IsEnabled = true;
+                    DisconnectWorldMenuItem.IsEnabled = true;
                     //Enable timer that reads from world
                     _readTimer.Enabled = true;
                 }
@@ -765,19 +757,19 @@ namespace Yam
         }
         #region Main Menu
 
-        private void openWorldCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        private void OpenWorldCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = true;
             e.Handled = true;
         }
-        private void openWorldMenuItem_Command(object sender, ExecutedRoutedEventArgs e)
+        private void OpenWorldMenuItem_Command(object sender, ExecutedRoutedEventArgs e)
         {
             OpenWorld();         
         }
         
         private void OpenWorld()
         {
-            var window = new newWorld { Owner = this };
+            var window = new NewWorld { Owner = this };
             window.newWorldSelect = true;
             bool? result = window.ShowDialog();
 
@@ -822,7 +814,7 @@ namespace Yam
         {                   
             WriteWorld(currentWorldInfo);
         }
-        private void reconnectMenuItem_Click(object sender, EventArgs e)
+        private void ReconnectMenuItem_Click(object sender, EventArgs e)
         {
             //if (currentWorld.IsConnected)
             //{
@@ -835,15 +827,15 @@ namespace Yam
                 }
             //}
         }
-        private void disconnectMenuItem_Click(object sender, EventArgs e)
+        private void DisconnectMenuItem_Click(object sender, EventArgs e)
         {
             //Try to disconnect
             if (currentWorld.Disconnect())
             {
                 mudOutputText.AppendText("\nDisconnected from world", Brushes.Gold);
 
-                disconnectWorldMenuItem.IsEnabled = false;
-                reconnectWorldMenuItem.IsEnabled = false;
+                DisconnectWorldMenuItem.IsEnabled = false;
+                ReconnectWorldMenuItem.IsEnabled = false;
             }
             else
             {
@@ -1012,7 +1004,7 @@ public static class RichTextBoxExtensions
     public static void AppendText(this RichTextBox box, string text, Brush color, string fontWeight = "normal")
     {
         
-        BrushConverter bc = new BrushConverter();
+        //BrushConverter bc = new BrushConverter();
 /*
         TextPointer moveTo = box.CaretPosition.GetNextInsertionPosition(LogicalDirection.Forward);
 

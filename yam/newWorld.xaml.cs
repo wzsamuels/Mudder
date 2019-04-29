@@ -27,15 +27,14 @@ namespace Yam
     /// <summary>
     /// Interaction logic for newWorld.xaml
     /// </summary>
-    public partial class newWorld : Window
+    public partial class NewWorld : Window
     {
         public WorldInfo _ui = new WorldInfo();
         public bool newWorldSelect = false;
         private bool autoLogin = false;
-        public bool saveLogin = false;
-        private const string configFile = "world_data"; 
+        public bool saveLogin = false;  
 
-        public newWorld()
+        public NewWorld()
         {
             InitializeComponent();
             
@@ -47,18 +46,17 @@ namespace Yam
             passwordBlock.Foreground = Brushes.Gray;
 
             ObservableCollection<ListBoxItem> listItems = new ObservableCollection<ListBoxItem>();
-            List<WorldInfo> loadedWorlds = new List<WorldInfo>();
 
-            WorldCollection wc = MainWindow.ReadConfig();
-            loadedWorlds = wc.Worlds;
-            
+            var loadedWorlds = MainWindow.ReadConfig().Worlds;
             if (loadedWorlds != null)
             {
-                foreach (WorldInfo world in loadedWorlds)
+                foreach (WorldInfo world in MainWindow.ReadConfig().Worlds)
                 {
-                    ListBoxItem worldItem = new ListBoxItem();
-                    worldItem.Content = world.WorldName;
-                    worldItem.Name = world.WorldName;
+                    ListBoxItem worldItem = new ListBoxItem
+                    {
+                        Content = world.WorldName,
+                        Name = world.WorldName
+                    };
 
                     listItems.Add(worldItem);
                 }
@@ -154,7 +152,7 @@ namespace Yam
 
         }
 
-        private void okNewWorldButton_Click(object sender, EventArgs e)
+        private void OkNewWorldButton_Click(object sender, EventArgs e)
         {
             string worldNameTemp = worldNameText.Text.Trim();
             string worldURLTemp = worldURLText.Text.Trim();
@@ -182,10 +180,9 @@ namespace Yam
                     errorMessage = true;
                 }
 
-                int worldPortTemp = 1;
-
                 if (worldPortText.Text.Trim().Length > 0)
                 {
+                    int worldPortTemp;
                     //Let's make sure the user actually entered a number for the port
                     try
                     {
@@ -234,7 +231,7 @@ namespace Yam
             }
             
         }
-        private void cancelNewWorldButton_Click(object sender, EventArgs e)
+        private void CancelNewWorldButton_Click(object sender, EventArgs e)
         {
             this.DialogResult = false;
             this.Close();

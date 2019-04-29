@@ -25,8 +25,8 @@
                 <MenuItem Name="openWorldMenuItem" Header="Open World" 
                           InputGestureText="Ctrl+O"/>
                 <MenuItem x:Name="saveWorldMenuItem" Header="Save World" Click="saveWorldMenuItem_Click"/>
-                <MenuItem x:Name="reconnectWorldMenuItem" Header="Reconnect" Click="reconnectMenuItem_Click"></MenuItem>
-                <MenuItem x:Name="disconnectWorldMenuItem"  Header="Disconnect" Click="disconnectMenuItem_Click"></MenuItem>
+                <MenuItem x:Name="ReconnectWorldMenuItem" Header="Reconnect" Click="ReconnectMenuItem_Click"></MenuItem>
+                <MenuItem x:Name="DisconnectWorldMenuItem"  Header="Disconnect" Click="DisconnectMenuItem_Click"></MenuItem>
                 <MenuItem Header="Quit" Click="QuitMenuItem_Click"></MenuItem>
 
             </MenuItem>
