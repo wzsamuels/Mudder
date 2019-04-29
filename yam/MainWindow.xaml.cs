@@ -54,15 +54,15 @@ namespace Yam
     public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     {
         #region Private variables
-        private asyncConnect currentWorld = new asyncConnect();       
+        private AsyncConnect currentWorld = new AsyncConnect();
         private WorldInfo currentWorldInfo = new WorldInfo();
         public static RoutedCommand openWorldCommand = new RoutedCommand();
+        private bool disposed = false;
 
         private static readonly string ConfigFile1
-            = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"Yam","world.cfg");
+            = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam", "world.cfg");
         //Timer to read from open world
         private readonly System.Timers.Timer _readTimer;
-
 
         //Drawing the output RTB
         List<string> mudBufferGlobal = new List<string>();
@@ -80,7 +80,7 @@ namespace Yam
         public struct Trigger
         {
             public string name;
-            public Regex regex;            
+            public Regex regex;
         }
 
         //Info vars bound to status bar
@@ -92,7 +92,7 @@ namespace Yam
         private List<string> commandHistory = new List<string>();
         private int commandIndex = 0;
 
-        public string worldURLText
+        public string WorldURLText
         {
             get { return _worldURLText; }
             set
@@ -113,10 +113,6 @@ namespace Yam
             }
         }
 
-        //public static string ConfigFile => ConfigFile1;
-
-       // public static string ConfigFile1 => configFile;
-
         // Text and its color
         public struct ColoredText
         {
@@ -131,8 +127,8 @@ namespace Yam
             public FontWeight weight;
             public bool isLink;
         }
-        
-        #endregion        
+
+        #endregion
 
         public MainWindow()
         {
@@ -144,45 +140,40 @@ namespace Yam
             userInputText.Focus();
             userInputText.Clear();
 
-//            mudOutputText.IsReadOnly = true;            
-  //          mudOutputText.IsDocumentEnabled = true;
-
             disconnectWorldMenuItem.IsEnabled = false;
             reconnectWorldMenuItem.IsEnabled = false;
 
             //For getting data from world
-            _readTimer = new System.Timers.Timer(10); 
-            _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);                     
-            
+            _readTimer = new System.Timers.Timer(10);
+            _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+
             //Set up the colors used for channel name coloring
 
             BrushConverter bc = new BrushConverter();
             defaultColor = (Brush)bc.ConvertFromString("#BEBEBE");
 
-            colorsUsed = new Dictionary<Brush, bool>();
-            colorsUsed.Add(Brushes.Maroon, false);
-            colorsUsed.Add(Brushes.Beige, false);
-            colorsUsed.Add(Brushes.Aqua, false);
-            colorsUsed.Add(Brushes.Orange, false);
-            colorsUsed.Add(Brushes.Yellow, false);
-            colorsUsed.Add(Brushes.Tomato, false);
-            colorsUsed.Add(Brushes.Olive, false);
-            colorsUsed.Add(Brushes.DarkTurquoise, false);
-            colorsUsed.Add(Brushes.LimeGreen, false);
-            colorsUsed.Add(Brushes.DarkOliveGreen, false);
-            colorsUsed.Add(Brushes.RoyalBlue, false);
-            colorsUsed.Add(Brushes.Sienna, false);
-            colorsUsed.Add(Brushes.Violet, false);
-            
-            numLinesText = 0;            
+            colorsUsed = new Dictionary<Brush, bool>
+            {
+                { Brushes.Maroon, false },
+                { Brushes.Beige, false },
+                { Brushes.Aqua, false },
+                { Brushes.Orange, false },
+                { Brushes.Yellow, false },
+                { Brushes.Tomato, false },
+                { Brushes.Olive, false },
+                { Brushes.DarkTurquoise, false },
+                { Brushes.LimeGreen, false },
+                { Brushes.DarkOliveGreen, false },
+                { Brushes.RoyalBlue, false },
+                { Brushes.Sienna, false },
+                { Brushes.Violet, false }
+            };
 
-      //      mudOutputText.AddHandler(Hyperlink.RequestNavigateEvent,
-          //      new RoutedEventHandler(this.link_RequestNavigate));
-
-            CommandBinding openWorldCommandBinding = new CommandBinding(
-            openWorldCommand, openWorldMenuItem_Command, openWorldCanExecute);
+            numLinesText = 0;
 
             // attach CommandBinding to root window 
+            CommandBinding openWorldCommandBinding = new CommandBinding(
+            openWorldCommand, openWorldMenuItem_Command, openWorldCanExecute);
             this.CommandBindings.Add(openWorldCommandBinding);
 
             cutMenu.Icon = new System.Windows.Controls.Image
@@ -199,21 +190,46 @@ namespace Yam
             this.InputBindings.Add(openWorldBinding);
             openWorldMenuItem.Command = openWorldCommand;
         }
+        
+        /*
         public void Dispose()
         {
             _readTimer.Dispose();
             this.Dispose();
+        }*/
+        
+        
+        public void Dispose()
+        {
+            
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
-        
-        
-        
-        #region INotifyPropertyChanged Members
 
-		public event PropertyChangedEventHandler PropertyChanged;
+        // Protected implementation of Dispose pattern.
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposed)
+                return;
+
+            if (disposing)
+            {
+                _readTimer.Dispose();
+                // Free any other managed objects here.
+                //
+            }
+            disposed = true;
+        }
+
+    #region INotifyPropertyChanged Members
+
+    public event PropertyChangedEventHandler PropertyChanged;
 		protected void OnPropertyChanged(string strPropertyName)
 		{
-			if (PropertyChanged != null)
-				PropertyChanged(this, new PropertyChangedEventArgs(strPropertyName));
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(strPropertyName));
+            }
 		}
         #endregion
 
@@ -233,21 +249,20 @@ namespace Yam
                         commandHistory.Add(prompt);
                         commandIndex = commandHistory.Count - 1;
                         userInputText.Clear();
-                        //mudOutputText.ScrollToEnd();
                     }
                     else
                     {
-                        MessageBox.Show("Not connected to any world", "mudpants");
+                        MessageBox.Show("Not connected to any world", "YAM");
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Not connected to any world", "mudpants");                        
+                    MessageBox.Show("Not connected to any world", "YAM");                        
                 }
                 
                 e.Handled = true;
             }
-            //Scroll up throw command history
+            //Scroll up through command history
             else if(e.Key == Key.Up)
             {
 
@@ -255,7 +270,6 @@ namespace Yam
                 {
                     userInputText.Clear();
                     userInputText.Text = commandHistory.ElementAt(commandIndex);
-                  //  MessageBox.Show(commandIndex.ToString());
                     if (commandIndex != 0)
                         commandIndex--;
                 }                
@@ -267,7 +281,6 @@ namespace Yam
                 {
                     userInputText.Clear();
                     userInputText.Text = commandHistory.ElementAt(commandIndex);
-                    //  MessageBox.Show(commandIndex.ToString());
                     if (commandIndex != commandHistory.Count - 1)
                         commandIndex++;
                 }
@@ -284,7 +297,7 @@ namespace Yam
                 e.Handled = true;
             }
         }
-
+        //Open URLs in a browser when clicked
         private void RequestNavigateHandler(object sender, RequestNavigateEventArgs e)
         {
             Process.Start(e.Uri.ToString());
@@ -454,11 +467,13 @@ namespace Yam
                     else
                     {
                         text = temp;
-                    }                    
+                    }
 
-                    newSpan = new Span(new Run(text));
-                    newSpan.Foreground = mudBuffer[i].color;
-                    newSpan.FontWeight = mudBuffer[i].weight;
+                    newSpan = new Span(new Run(text))
+                    {
+                        Foreground = mudBuffer[i].color,
+                        FontWeight = mudBuffer[i].weight
+                    };
                     newPara.Inlines.Add(newSpan);
                 }
                 
@@ -697,11 +712,11 @@ namespace Yam
                     
         }
 
-        private void connectToWorld(WorldInfo world)
+        private void ConnectToWorld(WorldInfo world)
         {            
             if (!currentWorld.IsConnected)
             {
-                currentWorld = new asyncConnect();
+                currentWorld = new AsyncConnect();
                 mudOutputText.AppendText("\nConnecting...", Brushes.Gold);
                 
                 if (currentWorld.ConnectWorld(world.WorldURL, world.WorldPort))
@@ -720,7 +735,7 @@ namespace Yam
                             ipAddress += ", ";
                     }
 
-                    worldURLText = world.WorldURL + " (" + ipAddress
+                    WorldURLText = world.WorldURL + " (" + ipAddress
                         + ") at port " + world.WorldPort;
 
                     if (world.AutoLogin)
@@ -764,7 +779,7 @@ namespace Yam
         {
             var window = new newWorld { Owner = this };
             window.newWorldSelect = true;
-            Nullable<bool> result = window.ShowDialog();
+            bool? result = window.ShowDialog();
 
             if (result.HasValue && result.Value)
             {
@@ -786,11 +801,11 @@ namespace Yam
                     string[] temparray = path.Split(' ');
 
                     //Load the selected world if it's in the save file
-                    List<WorldInfo> loadedWorlds = new List<WorldInfo>();
-                    WorldCollection wc = MainWindow.ReadWorld();
-                    loadedWorlds = wc.Worlds;
+                    //List<WorldInfo> loadedWorlds = new List<WorldInfo>();
+                    //WorldCollection wc = MainWindow.ReadWorld().Worlds;
+                    //var loadedWorlds = wc.Worlds;
 
-                    foreach (WorldInfo world in loadedWorlds)
+                    foreach (WorldInfo world in ReadConfig().Worlds)
                     {
                         if (temparray[1] == world.WorldName)
                         {
@@ -799,7 +814,7 @@ namespace Yam
                     }
                 }                                
                
-                connectToWorld(currentWorldInfo);
+                ConnectToWorld(currentWorldInfo);
             }
         }
         
@@ -816,7 +831,7 @@ namespace Yam
                 if (currentWorld.Disconnect())
                 {
                     mudOutputText.AppendText("\nDisconnected from world", Brushes.Gold);
-                    connectToWorld(currentWorldInfo);
+                    ConnectToWorld(currentWorldInfo);
                 }
             //}
         }
@@ -835,7 +850,7 @@ namespace Yam
                 mudOutputText.AppendText("\nCould not disconnect. Something must have gone horribly wrong.", Brushes.Gold);
             }
         }
-        private void quitMenuItem_Click(object sender, EventArgs e)
+        private void QuitMenuItem_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Are you sure you want to quit?", "Exit",
                 MessageBoxButton.OKCancel) == MessageBoxResult.OK)
@@ -845,7 +860,7 @@ namespace Yam
             }        
         }
 
-        private void fontMenuItem_Click(object sender, RoutedEventArgs e)
+        private void FontMenuItem_Click(object sender, RoutedEventArgs e)
         {
             ShowFontDialog();
         }
@@ -872,16 +887,16 @@ namespace Yam
                 {
                     Directory.CreateDirectory(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));
                 }
-                catch
+                catch (Exception e)
                 {
-                    MessageBox.Show("Could not create directory!\nNot able to save file!");               
+                    MessageBox.Show($"{e.Message}");               
                 }
             }
             WorldCollection tempwc = new WorldCollection();
             ///If there's already saved worlds, load them
             if (File.Exists(ConfigFile1))
             {
-                tempwc = ReadWorld();
+                tempwc = ReadConfig();
             }
             
             XmlSerializer wcSerializer =
@@ -917,11 +932,9 @@ namespace Yam
             //   file.Close();
         }
 
-        public static WorldCollection ReadWorld()
+        public static WorldCollection ReadConfig()
         {
             WorldCollection data = new WorldCollection();     
-
-
             //WorldCollection data = null;
             var wcSerializer = new XmlSerializer(typeof(WorldCollection));
             StreamReader wcReader = null;
@@ -938,16 +951,16 @@ namespace Yam
                     _ = MessageBox.Show("Error with Deserialize");
                 }
             }
-            catch (FileNotFoundException) {
-                MessageBox.Show("Error reading file");
+            catch (FileNotFoundException e) {
+                MessageBox.Show($"{e.Message}: {e.FileName} ");
             }
-            catch (IOException)
+            catch (IOException e)
             {
-                MessageBox.Show("An I/O error has occurred.");
+                MessageBox.Show($"{e.Message}");
             }
-            catch (OutOfMemoryException)
+            catch (OutOfMemoryException e)
             {
-                MessageBox.Show("There is insufficient memory to read the file.");
+                MessageBox.Show($"{e.Message}");
             }
             finally
             {
@@ -960,9 +973,6 @@ namespace Yam
         {
             System.Windows.Forms.FontDialog fd = 
                 new System.Windows.Forms.FontDialog();
-
-
-            
             System.ComponentModel.TypeConverter converter =
                 System.ComponentModel.TypeDescriptor.GetConverter(typeof(System.Drawing.Font));
 
@@ -980,15 +990,15 @@ namespace Yam
                 //MessageBox.Show(String.Format("Font: {0}", fd.Font));
                 mudOutputText.Document.FontFamily = new FontFamily(fd.Font.Name);
                 mudOutputText.Document.FontSize = fd.Font.Size;// * 96.0 / 72.0;
+                mudOutputText.Document.FontWeight = fd.Font.Bold ? FontWeights.Bold : FontWeights.Regular;
+                mudOutputText.Document.FontStyle = fd.Font.Italic ? FontStyles.Italic : FontStyles.Normal;
                 defaultColor = 
                     new SolidColorBrush(Color.FromArgb(fd.Color.A, fd.Color.R, fd.Color.G, fd.Color.B));
             }
-            //mudOutputText.Document.FontWeight = fd.Font.Bold ? FontWeights.Bold : FontWeights.Regular;
-            //mudOutputText.Document.FontStyle = fd.Font.Italic? FontStyles.Italic: FontStyles.Normal;
         }
         
-
-        private void clearMenuItem_Click(object sender, RoutedEventArgs e)
+        //Clear the output window
+        private void ClearMenuItem_Click(object sender, RoutedEventArgs e)
         {
             mudOutputText.Document.Blocks.Clear();
         }
@@ -1025,7 +1035,7 @@ public static class RichTextBoxExtensions
         }
         catch (FormatException) { }
     }
-
+    /*
     public static bool ScrolledUp(this RichTextBox box)
     {
 
@@ -1043,7 +1053,7 @@ public static class RichTextBoxExtensions
                 //Not scrolled up
         else
             return false;                                               
-    }
+    }*/
     public class RichTextBoxThing : DependencyObject
     {
         public static bool GetIsAutoScroll(DependencyObject obj)
@@ -1059,18 +1069,17 @@ public static class RichTextBoxExtensions
         public static readonly DependencyProperty IsAutoScrollProperty =
             DependencyProperty.RegisterAttached("IsAutoScroll", typeof(bool), typeof(RichTextBoxThing), new PropertyMetadata(false, new PropertyChangedCallback((s, e) =>
             {
-                RichTextBox richTextBox = s as RichTextBox;
-                if (richTextBox != null)
+                if (s is RichTextBox richTextBox)
                 {
                     if ((bool)e.NewValue)
-                        richTextBox.TextChanged += richTextBox_TextChanged;
+                        richTextBox.TextChanged += RichTextBox_TextChanged;
                     else if ((bool)e.OldValue)
-                        richTextBox.TextChanged -= richTextBox_TextChanged;
+                        richTextBox.TextChanged -= RichTextBox_TextChanged;
 
                 }
             })));
 
-        static void richTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        static void RichTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             RichTextBox richTextBox = sender as RichTextBox;
             if ((richTextBox.VerticalOffset + richTextBox.ViewportHeight) == richTextBox.ExtentHeight || richTextBox.ExtentHeight < richTextBox.ViewportHeight)

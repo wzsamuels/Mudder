@@ -50,7 +50,7 @@ namespace Yam
         public StringBuilder sb = new StringBuilder();
     }
 
-    public class asyncConnect
+    public class AsyncConnect
     {
 
         // The response from the remote device.
@@ -65,7 +65,7 @@ namespace Yam
         private static ManualResetEvent receiveDone =
             new ManualResetEvent(false);
 
-        public asyncConnect()
+        public AsyncConnect()
         {
         }
 
@@ -118,8 +118,6 @@ namespace Yam
         public string Read()
         {
             StringBuilder myCompleteMessage = new StringBuilder();
-            //byte[] myReadBuffer = new byte[4096];
-            byte[] myReadBuffer = new byte[1024];
             string stringBuffer = String.Empty;
             int numberOfBytesRead = 0;
             NetworkStream stream = client.GetStream();
@@ -133,6 +131,8 @@ namespace Yam
                     // Incoming message may be larger than the buffer size. 
                     do
                     {
+                        //byte[] myReadBuffer = new byte[4096];
+                        byte[] myReadBuffer = new byte[1024];
                         numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
 
                         myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));

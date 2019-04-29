@@ -49,7 +49,7 @@ namespace Yam
             ObservableCollection<ListBoxItem> listItems = new ObservableCollection<ListBoxItem>();
             List<WorldInfo> loadedWorlds = new List<WorldInfo>();
 
-            WorldCollection wc = MainWindow.ReadWorld();
+            WorldCollection wc = MainWindow.ReadConfig();
             loadedWorlds = wc.Worlds;
             
             if (loadedWorlds != null)
