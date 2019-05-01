@@ -24,7 +24,7 @@
                 <MenuItem Header="_File">
                 <MenuItem Name="openWorldMenuItem" Header="Open World" 
                           InputGestureText="Ctrl+O"/>
-                <MenuItem x:Name="saveWorldMenuItem" Header="Save World" Click="saveWorldMenuItem_Click"/>
+                <MenuItem x:Name="saveWorldMenuItem" Header="Save World" Click="SaveWorldMenuItem_Click"/>
                 <MenuItem x:Name="ReconnectWorldMenuItem" Header="Reconnect" Click="ReconnectMenuItem_Click"></MenuItem>
                 <MenuItem x:Name="DisconnectWorldMenuItem"  Header="Disconnect" Click="DisconnectMenuItem_Click"></MenuItem>
                 <MenuItem Header="Quit" Click="QuitMenuItem_Click"></MenuItem>
@@ -52,7 +52,7 @@
             <MenuItem Header="_Window" />
              -->
                 <MenuItem Header="_Help">
-                <MenuItem Header="About" Click="aboutMenuItem_Click"/>
+                <MenuItem Header="About" Click="AboutMenuItem_Click"/>
             </MenuItem>
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"></Separator >
                 
@@ -107,7 +107,7 @@
 
         <TextBox x:Name="userInputText" HorizontalAlignment="Stretch" FontSize="13" TextWrapping="Wrap"
                      Height="40" Grid.Row="2" VerticalAlignment="Bottom" Width="Auto"                      
-                     PreviewKeyDown="userInputText_PreviewKeyDown" SpellCheck.IsEnabled="True" FontFamily="DejaVu Sans Mono"/>
+                     PreviewKeyDown="UserInputText_PreviewKeyDown" SpellCheck.IsEnabled="True" FontFamily="DejaVu Sans Mono"/>
         <StatusBar HorizontalAlignment="Stretch" Height="Auto" Grid.Row="3" 
                    VerticalAlignment="Bottom" Width="Auto">
             <StatusBarItem HorizontalAlignment="Left">

@@ -14,40 +14,27 @@
    limitations under the License.
 
  */
- 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-//using System.Drawing;
-//using Xceed.Wpf.Toolkit;
 using System.Linq;
 using System.IO;
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Timers;
 using System.Windows.Threading;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Yam
 {
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -56,35 +43,38 @@ namespace Yam
         #region Private variables
         private AsyncConnect currentWorld = new AsyncConnect();
         private WorldInfo currentWorldInfo = new WorldInfo();
-        public static RoutedCommand openWorldCommand = new RoutedCommand();
+        private static RoutedCommand openWorldCommand = new RoutedCommand();
         private bool disposed = false;
 
         private static readonly string ConfigFile1
-            = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam", "world.cfg");
+            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam", "world.cfg");
         //Timer to read from open world
-        private readonly System.Timers.Timer _readTimer;
-
-        //Drawing the output RTB
-        List<string> mudBufferGlobal = new List<string>();
+        private readonly Timer _readTimer;
 
         //Variables for channel coloring
         private List<ColoredText> channelList = new List<ColoredText>();
-        private Dictionary<Brush, bool> colorsUsed;
-        private Brush defaultColor;
+        //private Dictionary<Brush, bool> colorsUsed;
+        private Dictionary<Brush, bool> colorsUsed = new Dictionary<Brush, bool>
+        {
+            { Brushes.Maroon, false },
+            { Brushes.Beige, false },
+            { Brushes.Aqua, false },
+            { Brushes.Orange, false },
+            { Brushes.Yellow, false },
+            { Brushes.Tomato, false },
+            { Brushes.Olive, false },
+            { Brushes.DarkTurquoise, false },
+            { Brushes.LimeGreen, false },
+            { Brushes.DarkOliveGreen, false },
+            { Brushes.RoyalBlue, false },
+            { Brushes.Sienna, false },
+            { Brushes.Violet, false }
+        };
+        //I'm very picky about my shade of gray
+        private Brush defaultColor = (SolidColorBrush)new BrushConverter().ConvertFromString("#BEBEBE");
         private bool first_loop = true;
 
-        //Regex
-
-        List<Trigger> triggerList = new List<Trigger>();
-
-        public struct Trigger
-        {
-            public string name;
-            public Regex regex;
-        }
-
         //Info vars bound to status bar
-
         private double _numLinesText = 0;
         private string _worldURLText = "Not connected";
 
@@ -114,7 +104,7 @@ namespace Yam
         }
 
         // Text and its color
-        public struct ColoredText
+        struct ColoredText
         {
             public string text;
             public Brush colorName;
@@ -144,30 +134,8 @@ namespace Yam
             ReconnectWorldMenuItem.IsEnabled = false;
 
             //For getting data from world
-            _readTimer = new System.Timers.Timer(10);
+            _readTimer = new Timer(10);
             _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
-
-            //Set up the colors used for channel name coloring
-
-            BrushConverter bc = new BrushConverter();
-            defaultColor = (Brush)bc.ConvertFromString("#BEBEBE");
-
-            colorsUsed = new Dictionary<Brush, bool>
-            {
-                { Brushes.Maroon, false },
-                { Brushes.Beige, false },
-                { Brushes.Aqua, false },
-                { Brushes.Orange, false },
-                { Brushes.Yellow, false },
-                { Brushes.Tomato, false },
-                { Brushes.Olive, false },
-                { Brushes.DarkTurquoise, false },
-                { Brushes.LimeGreen, false },
-                { Brushes.DarkOliveGreen, false },
-                { Brushes.RoyalBlue, false },
-                { Brushes.Sienna, false },
-                { Brushes.Violet, false }
-            };
 
             NumLinesText = 0;
 
@@ -185,14 +153,6 @@ namespace Yam
             this.InputBindings.Add(openWorldBinding);
             openWorldMenuItem.Command = openWorldCommand;
         }
-        
-        /*
-        public void Dispose()
-        {
-            _readTimer.Dispose();
-            this.Dispose();
-        }*/
-        
         
         public void Dispose()
         {
@@ -227,7 +187,7 @@ namespace Yam
         #endregion
 
         // Handle the KeyDown event to determine the type of character entered into the control. 
-        private void userInputText_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void UserInputText_PreviewKeyDown(object sender, KeyEventArgs e)
         {            
             // Send userInputText to connected world on Return
             if (e.Key == Key.Return)
@@ -306,30 +266,27 @@ namespace Yam
                 ReadFromWorld();
             }
         }
-
-                // Read mud output             
+        // Read mud output             
         private void ReadFromWorld()
         {
-            List<string> fromBuffer = new List<string>();
+            List<string> rawInput = new List<string>();
             if (currentWorld.IsConnected)
             {
                 _readTimer.Enabled = false;
                 string buffer = currentWorld.Read();
 
+                //Text is read 
                 if (buffer != String.Empty)
                 {
-
                     string[] lines = buffer.Split('\n');
                     foreach (string line in lines)
                     {
-                        fromBuffer.Add(line);
+                        rawInput.Add(line);
                     }                    
-                    ScheduleDisplayUpdate(fromBuffer);
+                    ScheduleDisplayUpdate(rawInput);
                 }
                 _readTimer.Enabled = true;
-            }
-            
-
+            }           
         }
 
         //Because the display is updated async, make sure that it doesn't
@@ -337,38 +294,14 @@ namespace Yam
         //in non-chronological order. Which is cool but weird.
         private void ScheduleDisplayUpdate(List<string> fromBuffer)
         {
-            //If an update isn't already happening
-        //    if (!_displayUpdatePending)
-      //      {
-                List<FormattedText> mudBuffer = new List<FormattedText>();
-                List<FormattedText> temp = new List<FormattedText>();
+            List<FormattedText> mudBuffer = new List<FormattedText>();
 
-                if (mudBufferGlobal.Count != 0)
-                {                    
-                    temp = ParseBuffer(mudBufferGlobal);
-                    foreach (FormattedText ft in temp)
-                        mudBuffer.Add(ft);
-                    mudBufferGlobal.Clear();
-                }
+            foreach (FormattedText ft in ParseBuffer(fromBuffer))
+                mudBuffer.Add(ft);
 
-                temp = ParseBuffer(fromBuffer);
-                foreach (FormattedText ft in temp)
-                    mudBuffer.Add(ft);
-
-                Dispatcher.BeginInvoke(
-                    System.Windows.Threading.DispatcherPriority.SystemIdle,
-                        new OneArgDelegate(DrawOutput), mudBuffer);
-
-             //   _displayUpdatePending = true;
-       //     }
-            //Otherwise save the sent text for later
-        //    else
-       //     {
-          //      foreach (string line in fromBuffer)
-          //      {
-               //     mudBufferGlobal.Add(line);
-           //     }
-      //      }
+            Dispatcher.BeginInvoke(
+                DispatcherPriority.SystemIdle,
+                    new OneArgDelegate(DrawOutput), mudBuffer);          
         }
 
         // This updates mudOutputText
@@ -387,17 +320,7 @@ namespace Yam
             char[] charsToTrim = {'\n', '\r'};
             
             for (int i = 0; i < mudBuffer.Count; i++)
-            {
-                //Logging
-                /*
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"log.txt", true))
-                {
-                    file.Write(DateTime.Now.ToString());
-                    file.Write(" ");
-                    file.Write(mudBuffer[i].text);
-                }
-                */
-
+            {               
                 if (mudBuffer[i].isLink)
                 {                    
                     string linktext = mudBuffer[i].text;
@@ -470,18 +393,6 @@ namespace Yam
                 }
                 
             }
-
-            // Logging - totally broken!
-
-            /*
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"log.txt", true))
-            {
-                file.Write(DateTime.Now.ToString());
-                file.Write(" ");
-             //   file.Write();
-            }
-            */
-
             mudOutputText.Document.Blocks.Add(newPara);
             //mudOutputText.Document.PagePadding = new Thickness(10);                         
             NumLinesText = _numLinesText;
@@ -492,15 +403,12 @@ namespace Yam
             Process.Start(hyperlink.NavigateUri.ToString());
 
         }
-        public static string ReplaceLastOccurrence(string Source, string Find, string Replace)
-        {
-            int Place = Source.LastIndexOf(Find);
-            string result = Source.Remove(Place, Find.Length).Insert(Place, Replace);
-            return result;
-        }
-
+        /*
+         * Takes the 
+         * builds mudBuffer to return as the formated text to be drawn.
+        */
         private List<FormattedText> ParseBuffer(List<string> fromBuffer)
-        {
+        {            
             List<FormattedText> mudBuffer = new List<FormattedText>();
 
             foreach (string Text in fromBuffer)
@@ -509,7 +417,7 @@ namespace Yam
                 {
                     if (fromBuffer[0] != "")
                     {
-                        string buffer = String.Empty;
+                        string buffer = string.Empty;
                         string result = String.Empty;
                         string channelText = String.Empty;  //Text to color
                         Brush channelColor = Brushes.AliceBlue; //Text color
@@ -621,7 +529,7 @@ namespace Yam
                                 //(words[i].StartsWith("www")) || (words[i].StartsWith("\"www")))))
                             {
                                 //Flush the buffer
-                                if (buffer != String.Empty)
+                                if (!String.IsNullOrEmpty(buffer))
                                 {
                                     mudBuffer.Add(new FormattedText { text = buffer, color = 
                                         defaultColor, isLink = false, weight = FontWeights.Normal});
@@ -668,7 +576,7 @@ namespace Yam
 
                         }
                         
-                        if (buffer != String.Empty)
+                        if (!String.IsNullOrEmpty(buffer))
                         {
                             mudBuffer.Add(new FormattedText { text = buffer, color = 
                                         defaultColor, isLink = false, weight = FontWeights.Normal});
@@ -688,7 +596,6 @@ namespace Yam
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-
 
         private void MudOutputText_TextChanged(object sender, EventArgs e)
         {
@@ -770,19 +677,17 @@ namespace Yam
         private void OpenWorld()
         {
             var window = new NewWorld { Owner = this };
-            window.newWorldSelect = true;
+            window.NewWorldSelect = true;
             bool? result = window.ShowDialog();
 
             if (result.HasValue && result.Value)
             {
-                if (window.newWorldSelect)
+                if (window.NewWorldSelect)
                 {
                     currentWorldInfo = window.WorldInfo;
-                    if (window.saveLogin)
+                    if (window.SaveLogin)
                     {
-                        //WorldInfo tempWorld = new WorldInfo();
-                        //tempWorld = window.WorldInfo;
-                        WriteWorld(currentWorldInfo);
+                        WriteConfig(currentWorldInfo);
                     }
                 }
                     //Load a saved world
@@ -810,22 +715,18 @@ namespace Yam
             }
         }
         
-        private void saveWorldMenuItem_Click(object sender, EventArgs e)
+        private void SaveWorldMenuItem_Click(object sender, EventArgs e)
         {                   
-            WriteWorld(currentWorldInfo);
+            WriteConfig(currentWorldInfo);
         }
         private void ReconnectMenuItem_Click(object sender, EventArgs e)
         {
-            //if (currentWorld.IsConnected)
-            //{
-                //Try to disconnect
             mudOutputText.AppendText("\nTrying to disconnect...");
-                if (currentWorld.Disconnect())
-                {
-                    mudOutputText.AppendText("\nDisconnected from world", Brushes.Gold);
-                    ConnectToWorld(currentWorldInfo);
-                }
-            //}
+            if (currentWorld.Disconnect())
+            {
+                mudOutputText.AppendText("\nDisconnected from world", Brushes.Gold);
+                ConnectToWorld(currentWorldInfo);
+            }
         }
         private void DisconnectMenuItem_Click(object sender, EventArgs e)
         {
@@ -839,7 +740,9 @@ namespace Yam
             }
             else
             {
-                mudOutputText.AppendText("\nCould not disconnect. Something must have gone horribly wrong.", Brushes.Gold);
+                mudOutputText.AppendText("\nCould not disconnect. Must already be disconnected!", Brushes.Gold);
+                DisconnectWorldMenuItem.IsEnabled = false;
+                ReconnectWorldMenuItem.IsEnabled = false;
             }
         }
         private void QuitMenuItem_Click(object sender, EventArgs e)
@@ -851,37 +754,35 @@ namespace Yam
                 this.Close();
             }        
         }
-
-        private void FontMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            ShowFontDialog();
-        }
-
-        private void ShowFontDialog()
-        {
-           
-        }
         
-        private void aboutMenuItem_Click(object sender, EventArgs e)
+        private void AboutMenuItem_Click(object sender, EventArgs e)
         {
             About box = new About();
             box.Show();
         }
         #endregion
-
-        public static void WriteWorld(WorldInfo data)
+        #region Config File Handling
+        public static void WriteConfig(WorldInfo data)
         {
             //Test to see if config directory exists and create if not
-            if (!Directory.Exists(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")))
+            if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")))
             {
-                MessageBox.Show(string.Format("Creating dir {0}", System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")));
+                MessageBox.Show($"Creating dir {Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments))}", "Yam");
                 try
                 {
-                    Directory.CreateDirectory(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));
+                    Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));
                 }
-                catch (Exception e)
+                catch (UnauthorizedAccessException e)
                 {
                     MessageBox.Show($"{e.Message}");               
+                }
+                catch (IOException e)
+                {
+                    MessageBox.Show($"{e.Message}");
+                }
+                finally
+                {
+                    MessageBox.Show("Created dir!");
                 }
             }
             WorldCollection tempwc = new WorldCollection();
@@ -926,40 +827,18 @@ namespace Yam
 
         public static WorldCollection ReadConfig()
         {
-            WorldCollection data = new WorldCollection();     
-            //WorldCollection data = null;
-            var wcSerializer = new XmlSerializer(typeof(WorldCollection));
-            StreamReader wcReader = null;
-            try
-            { 
-                wcReader = new StreamReader(ConfigFile1);
-                try
-                {
-                    // Deserialize the content of the file 
-                    data = (WorldCollection)wcSerializer.Deserialize(wcReader);
-                }
-                catch (Exception)
-                {
-                    _ = MessageBox.Show("Error with Deserialize");
-                }
-            }
-            catch (FileNotFoundException e) {
-                MessageBox.Show($"{e.Message}: {e.FileName} ");
-            }
-            catch (IOException e)
+            WorldCollection data = new WorldCollection();
+            //WorldCollection data = null;           
+            using (StreamReader stream = new StreamReader(ConfigFile1))
             {
-                MessageBox.Show($"{e.Message}");
-            }
-            catch (OutOfMemoryException e)
-            {
-                MessageBox.Show($"{e.Message}");
-            }
-            finally
-            {
-                if (wcReader != null) wcReader.Dispose();
+                XmlSerializer serializer = new XmlSerializer(typeof(WorldCollection));
+                XmlReader reader = XmlReader.Create(stream, new XmlReaderSettings() { XmlResolver = null });
+                data = (WorldCollection)serializer.Deserialize(reader);
+
             }
             return data;
         }
+        #endregion
         #region Edit Menu Click Code
         private void PrefMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -1002,18 +881,7 @@ public static class RichTextBoxExtensions
 {
     //Appending text with color and weight
     public static void AppendText(this RichTextBox box, string text, Brush color, string fontWeight = "normal")
-    {
-        
-        //BrushConverter bc = new BrushConverter();
-/*
-        TextPointer moveTo = box.CaretPosition.GetNextInsertionPosition(LogicalDirection.Forward);
-
-        if (moveTo != null)
-        {
-
-            box.CaretPosition = moveTo;
-
-        }*/
+    {       
         TextRange tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
         tr.Text = text;
         try
@@ -1027,57 +895,5 @@ public static class RichTextBoxExtensions
         }
         catch (FormatException) { }
     }
-    /*
-    public static bool ScrolledUp(this RichTextBox box)
-    {
-
-        // get the vertical scroll position
-        double dVer = box.VerticalOffset;
-
-        //get the vertical size of the scrollable content area
-        double dViewport = box.ViewportHeight;
-
-        //get the vertical size of the visible content area
-        double dExtent = box.ExtentHeight;
-        //Scrolled up
-        if (box.VerticalOffset == box.ViewportHeight)
-            return true;
-                //Not scrolled up
-        else
-            return false;                                               
-    }*/
-    public class RichTextBoxThing : DependencyObject
-    {
-        public static bool GetIsAutoScroll(DependencyObject obj)
-        {
-            return (bool)obj.GetValue(IsAutoScrollProperty);
-        }
-
-        public static void SetIsAutoScroll(DependencyObject obj, bool value)
-        {
-            obj.SetValue(IsAutoScrollProperty, value);
-        }
-
-        public static readonly DependencyProperty IsAutoScrollProperty =
-            DependencyProperty.RegisterAttached("IsAutoScroll", typeof(bool), typeof(RichTextBoxThing), new PropertyMetadata(false, new PropertyChangedCallback((s, e) =>
-            {
-                if (s is RichTextBox richTextBox)
-                {
-                    if ((bool)e.NewValue)
-                        richTextBox.TextChanged += RichTextBox_TextChanged;
-                    else if ((bool)e.OldValue)
-                        richTextBox.TextChanged -= RichTextBox_TextChanged;
-
-                }
-            })));
-
-        static void RichTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            RichTextBox richTextBox = sender as RichTextBox;
-            if ((richTextBox.VerticalOffset + richTextBox.ViewportHeight) == richTextBox.ExtentHeight || richTextBox.ExtentHeight < richTextBox.ViewportHeight)
-                richTextBox.ScrollToEnd();
-        }
-    }
-
 }
 

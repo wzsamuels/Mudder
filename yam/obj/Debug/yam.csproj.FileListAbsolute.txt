@@ -202,6 +202,16 @@ C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\yam.csproj.CopyComplete
 C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\Yam.exe
 C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\Yam.pdb
 C:\Users\wzsam\Google Drive\yam\yam\obj\Debug\yam.csprojAssemblyReference.cache
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\About.baml
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\newWorld.baml
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\App.baml
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\About.g.cs
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\MainWindow.g.cs
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\newWorld.g.cs
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\PreferencesWindow.g.cs
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\App.g.cs
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\Yam_MarkupCompile.cache
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\Yam_MarkupCompile.lref
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Yam.exe.config
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Yam.exe
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Yam.pdb
@@ -211,7 +221,6 @@ C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.dll
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Aero.dll
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.Metro.dll
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Xceed.Wpf.AvalonDock.Themes.VS2010.dll
-C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Xceed.Wpf.DataGrid.dll
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\Xceed.Wpf.Toolkit.dll
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\de\Xceed.Wpf.AvalonDock.resources.dll
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\es\Xceed.Wpf.AvalonDock.resources.dll
@@ -223,17 +232,8 @@ C:\Users\wzsam\source\repos\yam\yam\bin\Debug\ro\Xceed.Wpf.AvalonDock.resources.
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\ru\Xceed.Wpf.AvalonDock.resources.dll
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\sv\Xceed.Wpf.AvalonDock.resources.dll
 C:\Users\wzsam\source\repos\yam\yam\bin\Debug\zh-Hans\Xceed.Wpf.AvalonDock.resources.dll
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\yam.csprojAssemblyReference.cache
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\About.baml
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\newWorld.baml
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\App.baml
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\About.g.cs
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\MainWindow.g.cs
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\newWorld.g.cs
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\App.g.cs
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\Yam_MarkupCompile.cache
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\Yam_MarkupCompile.lref
 C:\Users\wzsam\source\repos\yam\yam\obj\Debug\MainWindow.baml
+C:\Users\wzsam\source\repos\yam\yam\obj\Debug\PreferencesWindow.baml
 C:\Users\wzsam\source\repos\yam\yam\obj\Debug\Yam.g.resources
 C:\Users\wzsam\source\repos\yam\yam\obj\Debug\Yam.Properties.Resources.resources
 C:\Users\wzsam\source\repos\yam\yam\obj\Debug\yam.csproj.GenerateResource.cache
@@ -241,5 +241,3 @@ C:\Users\wzsam\source\repos\yam\yam\obj\Debug\yam.csproj.CoreCompileInputs.cache
 C:\Users\wzsam\source\repos\yam\yam\obj\Debug\yam.csproj.CopyComplete
 C:\Users\wzsam\source\repos\yam\yam\obj\Debug\Yam.exe
 C:\Users\wzsam\source\repos\yam\yam\obj\Debug\Yam.pdb
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\PreferencesWindow.g.cs
-C:\Users\wzsam\source\repos\yam\yam\obj\Debug\PreferencesWindow.baml

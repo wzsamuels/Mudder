@@ -29,17 +29,16 @@ namespace Yam
     /// </summary>
     public partial class NewWorld : Window
     {
-        public WorldInfo _ui = new WorldInfo();
-        public bool newWorldSelect = false;
-        private bool autoLogin = false;
-        public bool saveLogin = false;  
+        public WorldInfo UI { get; set; } = new WorldInfo();
+        public bool NewWorldSelect { get; set; } = false;
+        private bool AutoLogin { get; set; } = false;
+        public bool SaveLogin { get; set; } = false;  
 
         public NewWorld()
         {
             InitializeComponent();
             
             //Set up UI defaults
-
             usernameText.IsEnabled = false;
             passwordText.IsEnabled = false;
             usernameBlock.Foreground = Brushes.Gray;
@@ -83,12 +82,12 @@ namespace Yam
             }
 
         }        
-
+        
         public WorldInfo WorldInfo
         {
             get
             {
-                return (_ui);
+                return (UI);
             }
         }
 
@@ -113,7 +112,7 @@ namespace Yam
                 usernameBlock.Foreground = Brushes.Black;
                 passwordBlock.Foreground = Brushes.Black;
 
-                autoLogin = true;
+                AutoLogin = true;
             }
             else
             {
@@ -123,7 +122,7 @@ namespace Yam
                 usernameBlock.Foreground = Brushes.Gray;
                 passwordBlock.Foreground = Brushes.Gray;
 
-                autoLogin = false;
+                AutoLogin = false;
             }
             
         }
@@ -143,11 +142,11 @@ namespace Yam
             // Use IsChecked.
             if (passwordCheck.IsChecked.HasValue && passwordCheck.IsChecked.Value)
             {
-                saveLogin = true;
+                SaveLogin = true;
             }
             else
             {
-                saveLogin = false;
+                SaveLogin = false;
             }
 
         }
@@ -161,10 +160,10 @@ namespace Yam
 
             if (newWorldButton.IsChecked.HasValue && newWorldButton.IsChecked.Value)
             {
-                newWorldSelect = true;
+                NewWorldSelect = true;
                 if (worldNameTemp.Length > 0)
                 {
-                    _ui.WorldName = worldNameTemp;
+                    UI.WorldName = worldNameTemp;
                 }
                 else
                 {
@@ -173,7 +172,7 @@ namespace Yam
 
                 if (worldURLTemp.Length > 0)
                 {
-                    _ui.WorldURL = worldURLTemp;
+                    UI.WorldURL = worldURLTemp;
                 }
                 else
                 {
@@ -193,7 +192,7 @@ namespace Yam
                         errorMessage = true;
                         worldPortTemp = 0;
                     }
-                    _ui.WorldPort = worldPortTemp;
+                    UI.WorldPort = worldPortTemp;
                 }
                 else
                 {
@@ -205,8 +204,8 @@ namespace Yam
                 }
                 else
                 {
-                    _ui.AutoLogin = autoLogin;
-                    newWorldSelect = true;
+                    UI.AutoLogin = AutoLogin;
+                    NewWorldSelect = true;
                     CloseWindow();
                 }                
             }
@@ -214,7 +213,7 @@ namespace Yam
             {
                 if (worldList.SelectedValue != null)
                 {
-                    newWorldSelect = false;
+                    NewWorldSelect = false;
                     CloseWindow();
                 }
                 else
@@ -224,10 +223,10 @@ namespace Yam
                 }
                 
             }
-            if (autoLogin)
+            if (AutoLogin)
             {
-                _ui.Username = usernameText.Text.Trim();
-                _ui.Password = passwordText.Text.Trim();                
+                UI.Username = usernameText.Text.Trim();
+                UI.Password = passwordText.Text.Trim();                
             }
             
         }

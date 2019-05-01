@@ -20,6 +20,7 @@ using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Windows;
 
 namespace Yam
 {
@@ -38,6 +39,7 @@ namespace Yam
     }
 
     // State object for receiving data from remote device.
+    /*
     public class StateObject
     {
         // Client socket.
@@ -49,21 +51,22 @@ namespace Yam
         // Received data string.
         public StringBuilder sb = new StringBuilder();
     }
-
+    */
     public class AsyncConnect : IDisposable
     {
 
         // The response from the remote device.
-        private static string response = string.Empty;
+        //private static string response = string.Empty;
 
-        public TcpClient client = new TcpClient();
-        private static ManualResetEvent connectDone =
+        private TcpClient client = new TcpClient();
+        private static readonly ManualResetEvent connectDone =
             new ManualResetEvent(false);
-
+        /*
         private static ManualResetEvent sendDone =
             new ManualResetEvent(false);
         private static ManualResetEvent receiveDone =
             new ManualResetEvent(false);
+            */
         bool disposed = false;
 
         public AsyncConnect()
@@ -91,9 +94,14 @@ namespace Yam
                     return false;
                 }
             }
-            catch (Exception)
+            catch (SocketException e)
             {
-                //MessageBoxResult result = MessageBox.Show("Do you want to close this window?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                MessageBox.Show($"{e.Message}");
+                return false;
+            }
+            catch(ObjectDisposedException e)
+            {
+                MessageBox.Show($"{e.Message}");
                 return false;
             }
         }
@@ -160,15 +168,6 @@ namespace Yam
             }
 
         }
-
-        public string readFromWorld()
-        {
-            //Receive(client);
-            //    receiveDone.WaitOne();
-
-            return response;
-        }
-
 
         public bool IsConnected
         {

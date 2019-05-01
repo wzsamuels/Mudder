@@ -15,91 +15,16 @@
 
  */
 
- using System;
-
 namespace Yam
 {
-
+    /* Class for storing information about a mud world */
     public class WorldInfo
     {
-        private string _worldName = String.Empty;
-        private string _worldURL = String.Empty;
-        private int _worldPort = 0;
-        private string _username = String.Empty;
-        private string _password = String.Empty;
-        private bool _autoLogin = false;
-
-        public string WorldName
-        {
-            get
-            {
-                return (_worldName);
-            }
-            set
-            {
-                _worldName = value;
-            }
-        }
-
-        public string WorldURL
-        {
-            get
-            {
-                return (_worldURL);
-            }
-            set
-            {
-                _worldURL = value;
-            }
-        }
-
-        public int WorldPort
-        {
-            get
-            {
-                return (_worldPort);
-            }
-            set
-            {
-                _worldPort = value;
-            }
-        }
-
-        public string Username
-        {
-            get
-            {
-                return (_username);
-            }
-            set
-            {
-                _username = value;
-            }
-        }
-
-        public string Password
-        {
-            get
-            {
-                return (_password);
-            }
-            set
-            {
-                _password = value;
-            }
-        }
-        public bool AutoLogin
-        {
-            get
-            {
-                return (_autoLogin);
-            }
-            set
-            {
-                _autoLogin = value;
-            }
-        }
-
-       
+        public string WorldName { get; set; } = string.Empty;
+        public string WorldURL { get; set; } = string.Empty;
+        public int WorldPort { get; set; } = 0;
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public bool AutoLogin { get; set; } = false;
     }
 }

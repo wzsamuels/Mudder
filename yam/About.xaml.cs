@@ -15,11 +15,11 @@ namespace Yam
         public About()
         {
             InitializeComponent();
-        
 
-            this.Title = String.Format("About {0}", AssemblyTitle);
+
+            this.Title = $"About {AssemblyTitle}";//String.Format("About {0}", AssemblyTitle);
             this.ProductName.Text = AssemblyProduct;
-            this.Version.Text = String.Format("Version {0}", AssemblyVersion);
+            this.Version.Text = $"Version {AssemblyVersion}";
             this.Copyright.Text = AssemblyCopyright + " " + AssemblyCompany;
             //this.Description.Text = 
                
@@ -35,7 +35,7 @@ namespace Yam
                 if (attributes.Length > 0)
                 {
                     AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
-                    if (titleAttribute.Title != "")
+                    if (!String.IsNullOrEmpty(titleAttribute.Title))
                     {
                         return titleAttribute.Title;
                     }
@@ -44,7 +44,7 @@ namespace Yam
             }
         }
 
-        public string AssemblyVersion
+        public static string AssemblyVersion
         {
             get
             {
@@ -52,7 +52,7 @@ namespace Yam
             }
         }
 
-        public string AssemblyDescription
+        public static string AssemblyDescription
         {
             get
             {
@@ -91,7 +91,7 @@ namespace Yam
             }
         }
 
-        public string AssemblyCompany
+        public static string AssemblyCompany
         {
             get
             {
@@ -105,7 +105,7 @@ namespace Yam
         }
         #endregion
 
-        private void okButton_Click(object sender, EventArgs e)
+        private void OkButton_Click(object sender, EventArgs e)
         {
             this.Close();
         }
