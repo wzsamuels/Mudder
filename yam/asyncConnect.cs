@@ -59,7 +59,7 @@ namespace Yam
         //private static string response = string.Empty;
 
         private TcpClient client = new TcpClient();
-        private static readonly ManualResetEvent connectDone =
+        private static ManualResetEvent connectDone =
             new ManualResetEvent(false);
         /*
         private static ManualResetEvent sendDone =
@@ -77,14 +77,11 @@ namespace Yam
         {
             try
             {
-                //  client.BeginConnect(worldName, Port, new AsyncCallback(ConnectCallback), client);
-                client.Connect(worldName, Port);
-                if (!client.Connected)
-                {
-                    client.BeginConnect(worldName, Port,
-                        new AsyncCallback(ConnectCallback), client);
-                    connectDone.WaitOne();
-                }
+                connectDone.Reset();
+                    //MessageBox.Show("Does this ever happen?");
+                client.BeginConnect(worldName, Port,
+                    new AsyncCallback(ConnectCallback), client);
+                connectDone.WaitOne();
                 if (client.Connected)
                 {
                     return true;
@@ -109,14 +106,15 @@ namespace Yam
         {
             try
             {
+                connectDone.Set();
                 // Retrieve the socket from the state object.
-                Socket client = (Socket)ar.AsyncState;
+                TcpClient client = (TcpClient)ar.AsyncState;
 
                 // Complete the connection.
                 client.EndConnect(ar);
 
                 // Signal that the connection has been made.
-                connectDone.Set();
+                
             }
             catch (Exception)
             {
