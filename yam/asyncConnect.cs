@@ -24,61 +24,19 @@ using System.Windows;
 
 namespace Yam
 {
-    enum Verbs
-    {
-        WILL = 251,
-        WONT = 252,
-        DO = 253,
-        DONT = 254,
-        IAC = 255
-    }
-
-    enum Options
-    {
-        SGA = 3
-    }
-
-    // State object for receiving data from remote device.
-    /*
-    public class StateObject
-    {
-        // Client socket.
-        public Socket workSocket = null;
-        // Size of receive buffer.
-        public const int BufferSize = 256;
-        // Receive buffer.
-        public byte[] buffer = new byte[BufferSize];
-        // Received data string.
-        public StringBuilder sb = new StringBuilder();
-    }
-    */
     public class AsyncConnect : IDisposable
     {
-
-        // The response from the remote device.
-        //private static string response = string.Empty;
-
         private TcpClient client = new TcpClient();
         private static ManualResetEvent connectDone =
             new ManualResetEvent(false);
-        /*
-        private static ManualResetEvent sendDone =
-            new ManualResetEvent(false);
-        private static ManualResetEvent receiveDone =
-            new ManualResetEvent(false);
-            */
-        bool disposed = false;
 
-        public AsyncConnect()
-        {
-        }
+        bool disposed = false;
 
         public bool ConnectWorld(string worldName, int Port)
         {
             try
             {
                 connectDone.Reset();
-                    //MessageBox.Show("Does this ever happen?");
                 client.BeginConnect(worldName, Port,
                     new AsyncCallback(ConnectCallback), client);
                 connectDone.WaitOne();
@@ -113,8 +71,7 @@ namespace Yam
                 // Complete the connection.
                 client.EndConnect(ar);
 
-                // Signal that the connection has been made.
-                
+                // Signal that the connection has been made.              
             }
             catch (Exception)
             {
@@ -124,47 +81,32 @@ namespace Yam
 
         public string Read()
         {
+            //TODO check the amount of data available to read
+            if (client.Available > 0) { }
             StringBuilder myCompleteMessage = new StringBuilder();
             NetworkStream stream = client.GetStream();
-            try
-            {
 
-                if (stream.CanRead)
+            if (stream.CanRead && client.Available > 0)
+            {
+                // Incoming message may be larger than the buffer size. 
+                int loop = 0;
+                while (stream.DataAvailable)
                 {
+                    //byte[] myReadBuffer = new byte[1024];
+                    byte[] myReadBuffer = new byte[client.Available];
+                    int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
 
-                    // Incoming message may be larger than the buffer size. 
-                    do
-                    {
-                        //byte[] myReadBuffer = new byte[4096];
-                        byte[] myReadBuffer = new byte[1024];
-                        int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
-
-                        myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
-
-                    }
-                    while (stream.DataAvailable);
-
-                    // Print out the received message to the console.
-                    return myCompleteMessage.ToString();
+                    myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
+                    MessageBox.Show($"{loop}");
+                    loop++;
                 }
-                else
-                {
-                    return myCompleteMessage.ToString();
-                }
+                // Return the received message
+                return myCompleteMessage.ToString();
             }
-            catch (SocketException)
+            else
             {
                 return myCompleteMessage.ToString();
             }
-            catch (ObjectDisposedException)
-            {
-                return myCompleteMessage.ToString();
-            }
-            catch (System.IO.IOException)
-            {
-                return myCompleteMessage.ToString();
-            }
-
         }
 
         public bool IsConnected
@@ -187,8 +129,6 @@ namespace Yam
 
         public void WriteToWorld(string data)
         {
-            //Send(client, data);
-            //sendDone.WaitOne();
             byte[] byteData = Encoding.UTF8.GetBytes(data);
             NetworkStream stream = client.GetStream();
             stream.Write(byteData, 0, byteData.Length);
@@ -197,7 +137,6 @@ namespace Yam
         }
         public void Dispose()
         {
-
             Dispose(true);
             GC.SuppressFinalize(this);
         }

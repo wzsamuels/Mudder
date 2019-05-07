@@ -53,7 +53,7 @@ namespace Yam
 
         //Variables for channel coloring
         private List<ColoredText> channelList = new List<ColoredText>();
-        //private Dictionary<Brush, bool> colorsUsed;
+        //Default colors for channel coloring
         private Dictionary<Brush, bool> colorsUsed = new Dictionary<Brush, bool>
         {
             { Brushes.Maroon, false },
@@ -81,6 +81,7 @@ namespace Yam
         // Command history
         private List<string> commandHistory = new List<string>();
         private int commandIndex = 0;
+        #endregion
 
         public string WorldURLText
         {
@@ -118,7 +119,7 @@ namespace Yam
             public bool isLink;
         }
 
-        #endregion
+        
 
         public MainWindow()
         {
@@ -179,6 +180,12 @@ namespace Yam
 
         #region INotifyPropertyChanged Members
 
+        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show("An unhandled exception just occurred: " + e.Exception.Message, Title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            e.Handled = true;
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 	    protected void OnPropertyChanged(string strPropertyName)
 	    {
@@ -186,33 +193,26 @@ namespace Yam
         }
         #endregion
 
-        // Handle the KeyDown event to determine the type of character entered into the control. 
+        /// <summary>
+        /// Handle the KeyDown event to determine the type of character entered into the control. 
+        /// </summary>
         private void UserInputText_PreviewKeyDown(object sender, KeyEventArgs e)
         {            
             // Send userInputText to connected world on Return
             if (e.Key == Key.Return)
             {
-
                 string prompt = userInputText.Text;
-                if (currentWorld != null)
+                if (currentWorld.IsConnected)
                 {
-                    if (currentWorld.IsConnected)
-                    {
-                        currentWorld.WriteToWorld(prompt);
-                        commandHistory.Add(prompt);
-                        commandIndex = commandHistory.Count - 1;
-                        userInputText.Clear();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Not connected to any world", "YAM");
-                    }
+                    currentWorld.WriteToWorld(prompt);
+                    commandHistory.Add(prompt);
+                    commandIndex = commandHistory.Count - 1;
+                    userInputText.Clear();
                 }
                 else
                 {
-                    MessageBox.Show("Not connected to any world", "YAM");                        
+                    mudOutputText.AppendText("\nNot connected to any world!", Brushes.Gold);
                 }
-                
                 e.Handled = true;
             }
             //Scroll up through command history
@@ -298,10 +298,10 @@ namespace Yam
 
             foreach (FormattedText ft in ParseBuffer(fromBuffer))
                 mudBuffer.Add(ft);
-
+            
             Dispatcher.BeginInvoke(
                 DispatcherPriority.SystemIdle,
-                    new OneArgDelegate(DrawOutput), mudBuffer);          
+                    new OneArgDelegate(DrawOutput), mudBuffer); 
         }
 
         // This updates mudOutputText
@@ -573,7 +573,6 @@ namespace Yam
                                 if (i != words.Length - 1)
                                     buffer += " ";                               
                             }
-
                         }
                         
                         if (!String.IsNullOrEmpty(buffer))
@@ -607,8 +606,7 @@ namespace Yam
                 || (rtb.ExtentHeight < rtb.ViewportHeight))
             {
                 rtb.ScrollToEnd();
-            }
-                    
+            }                  
         }
 
         private void ConnectToWorld(WorldInfo world)
