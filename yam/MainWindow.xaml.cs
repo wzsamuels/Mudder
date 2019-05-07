@@ -135,10 +135,12 @@ namespace Yam
             ReconnectWorldMenuItem.IsEnabled = false;
 
             //For getting data from world
-            _readTimer = new Timer(10);
+            _readTimer = new Timer(60);
             _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
 
-            NumLinesText = 0;
+            Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
+
+            //NumLinesText = 0;
 
             // attach CommandBinding to root window 
             CommandBinding openWorldCommandBinding = new CommandBinding(
@@ -154,7 +156,13 @@ namespace Yam
             this.InputBindings.Add(openWorldBinding);
             openWorldMenuItem.Command = openWorldCommand;
         }
-        
+
+        private void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            MessageBox.Show("An unhandled exception just occurred: " + e.Exception.Message, Title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            e.Handled = true;
+        }
+
         public void Dispose()
         {
             
@@ -179,12 +187,6 @@ namespace Yam
         }
 
         #region INotifyPropertyChanged Members
-
-        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-        {
-            MessageBox.Show("An unhandled exception just occurred: " + e.Exception.Message, Title, MessageBoxButton.OK, MessageBoxImage.Warning);
-            e.Handled = true;
-        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 	    protected void OnPropertyChanged(string strPropertyName)
@@ -299,6 +301,7 @@ namespace Yam
             foreach (FormattedText ft in ParseBuffer(fromBuffer))
                 mudBuffer.Add(ft);
             
+            //Use Dispatcher to safely update UI elements
             Dispatcher.BeginInvoke(
                 DispatcherPriority.SystemIdle,
                     new OneArgDelegate(DrawOutput), mudBuffer); 
@@ -344,8 +347,7 @@ namespace Yam
                         }
                     }
 
-                    Hyperlink hlk = new Hyperlink(new Run(linktext));
-                    
+                    Hyperlink hlk = new Hyperlink(new Run(linktext));                  
                     try
                     {
                         //Remove any extra quote marks from around the URL
@@ -355,9 +357,7 @@ namespace Yam
                         if (index != -1)
                         {
                             linktext = linktext.Remove(index, 1);
-                        }
-                        
-                        
+                        }                                              
                         hlk.NavigateUri = new Uri(linktext);
                     }
                     catch(UriFormatException)
@@ -376,8 +376,7 @@ namespace Yam
                     if (i == mudBuffer.Count - 1)
                     {
                         
-                        text = temp.TrimEnd(charsToTrim);
-                       
+                        text = temp.TrimEnd(charsToTrim);                      
                     }
                     else
                     {
@@ -390,23 +389,27 @@ namespace Yam
                         FontWeight = mudBuffer[i].weight
                     };
                     newPara.Inlines.Add(newSpan);
-                }
-                
+                }                
             }
-            mudOutputText.Document.Blocks.Add(newPara);
-            //mudOutputText.Document.PagePadding = new Thickness(10);                         
+            mudOutputText.Document.Blocks.Add(newPara);                     
             NumLinesText = _numLinesText;
         }
+        /// <summary>
+        /// Open a clicked URL in the default system browser
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Link_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             var hyperlink = (Hyperlink)sender;
             Process.Start(hyperlink.NavigateUri.ToString());
-
         }
-        /*
-         * Takes the 
-         * builds mudBuffer to return as the formated text to be drawn.
-        */
+        
+        /// <summary>
+        /// Apply a variety of rules to the text received from the connected world
+        /// </summary>
+        /// <param name="fromBuffer"></param>
+        /// <returns></returns>
         private List<FormattedText> ParseBuffer(List<string> fromBuffer)
         {            
             List<FormattedText> mudBuffer = new List<FormattedText>();
@@ -595,7 +598,6 @@ namespace Yam
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-
         private void MudOutputText_TextChanged(object sender, EventArgs e)
         {
             RichTextBox rtb = sender as RichTextBox;            
@@ -799,6 +801,7 @@ namespace Yam
                 tempwc.AddWorld(data); //Add world to list (not overwriting)
                 wcSerializer.Serialize(wcWriter, tempwc);
             }
+            
             catch (FileNotFoundException)
             {
                 MessageBox.Show("Config file not found");
@@ -811,6 +814,7 @@ namespace Yam
             {
                 MessageBox.Show("There is insufficient memory to read the file.");
             }
+            
             finally
             {
                 if (wcWriter != null) wcWriter.Dispose();
@@ -864,8 +868,7 @@ namespace Yam
                 defaultColor = 
                     new SolidColorBrush(Color.FromArgb(fd.Color.A, fd.Color.R, fd.Color.G, fd.Color.B));
             }
-        }
-        
+        }        
         //Clear the output window
         private void ClearMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -883,8 +886,7 @@ public static class RichTextBoxExtensions
         TextRange tr = new TextRange(box.Document.ContentEnd, box.Document.ContentEnd);
         tr.Text = text;
         try
-        {
-            
+        {          
             tr.ApplyPropertyValue(TextElement.ForegroundProperty, color);
             if (fontWeight == "normal")
                 tr.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Normal);

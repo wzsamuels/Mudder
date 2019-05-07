@@ -112,7 +112,7 @@
                    VerticalAlignment="Bottom" Width="Auto">
             <StatusBarItem HorizontalAlignment="Left">
                 <TextBlock Foreground="Black"
-                       Text = "{Binding worldURLText, StringFormat=Connected to: {0}}"/>
+                       Text = "{Binding WorldURLText, StringFormat=Connected to: {0}}"/>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Left">
                 <TextBlock Foreground="Black"
@@ -121,7 +121,7 @@
             
             <StatusBarItem HorizontalAlignment="Right">
                 <TextBlock Foreground="Black" x:Name="worldLabel"
-                       Text = "{Binding numLinesText, StringFormat=Lines Read: {0}}"/>
+                       Text = "{Binding NumLinesText, StringFormat=Lines Read: {0}}"/>
 
             </StatusBarItem>
         </StatusBar>

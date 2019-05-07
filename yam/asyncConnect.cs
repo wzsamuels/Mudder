@@ -81,15 +81,12 @@ namespace Yam
 
         public string Read()
         {
-            //TODO check the amount of data available to read
-            if (client.Available > 0) { }
             StringBuilder myCompleteMessage = new StringBuilder();
             NetworkStream stream = client.GetStream();
 
             if (stream.CanRead && client.Available > 0)
             {
                 // Incoming message may be larger than the buffer size. 
-                int loop = 0;
                 while (stream.DataAvailable)
                 {
                     //byte[] myReadBuffer = new byte[1024];
@@ -97,8 +94,6 @@ namespace Yam
                     int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
 
                     myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
-                    MessageBox.Show($"{loop}");
-                    loop++;
                 }
                 // Return the received message
                 return myCompleteMessage.ToString();
