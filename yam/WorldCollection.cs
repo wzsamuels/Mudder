@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Yam
 {
     /* Simply a List<> of WorldInfo classes. Exists to allow a single object to be serialized to a file
      * for ease of reading and writing.
      */
+     [Serializable]
     public class WorldCollection
     {
         public WorldCollection()

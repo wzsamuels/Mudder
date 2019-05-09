@@ -16,6 +16,7 @@
  */
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,14 +28,14 @@ namespace Yam
     /// <summary>
     /// Interaction logic for newWorld.xaml
     /// </summary>
-    public partial class NewWorld : Window
+    public partial class OpenWorldWindow : Window
     {
         public WorldInfo UI { get; set; } = new WorldInfo();
         public bool NewWorldSelect { get; set; } = false;
         private bool AutoLogin { get; set; } = false;
         public bool SaveLogin { get; set; } = false;  
 
-        public NewWorld()
+        public OpenWorldWindow()
         {
             InitializeComponent();
             
@@ -90,12 +91,10 @@ namespace Yam
                 return (UI);
             }
         }
-
         private void LoginCheck_Checked(object sender, RoutedEventArgs e)
         {
             LoginCheck_Handle(sender as CheckBox);
         }
-
         private void LoginCheck_Unchecked(object sender, RoutedEventArgs e)
         {
             LoginCheck_Handle(sender as CheckBox);
@@ -226,7 +225,9 @@ namespace Yam
             if (AutoLogin)
             {
                 UI.Username = usernameText.Text.Trim();
-                UI.Password = passwordText.Text.Trim();                
+                string tempPass = passwordText.Text.Trim();
+                byte[] bytePass = Encoding.UTF8.GetBytes(tempPass);
+                UI.ProtectedPassword = bytePass;
             }
             
         }

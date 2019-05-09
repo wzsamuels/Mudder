@@ -1,4 +1,4 @@
-﻿<Window x:Class="Yam.NewWorld"
+﻿<Window x:Class="Yam.OpenWorldWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" ResizeMode="NoResize"
         Title="Open New World" Height="547" Width="307" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"  >

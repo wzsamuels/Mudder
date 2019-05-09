@@ -7,6 +7,17 @@
         xmlns:uc="clr-namespace:Yam"
         xmlns:local="clr-namespace:Yam"
         Title="MainWindow" Height="700" Width="800" FontSize="14">
+    <Window.CommandBindings>
+        <CommandBinding Command="New" Executed="NewCommandBinding_Executed"/>
+        <CommandBinding Command="Open" Executed="OpenCommandBinding_Executed"/>
+        <CommandBinding Command="Save" Executed="SaveCommandBinding_Executed"/>
+      
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="New"/>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="Open"/>
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="Save"/>
+    </Window.InputBindings>
 
     <Grid Margin="0,0,0,0">
         <Grid.ColumnDefinitions>
@@ -22,10 +33,16 @@
               Width="auto">
             
                 <MenuItem Header="_File">
-                <MenuItem Name="openWorldMenuItem" Header="Open World" 
-                          InputGestureText="Ctrl+O"/>
-                <MenuItem x:Name="saveWorldMenuItem" Header="Save World" Click="SaveWorldMenuItem_Click"/>
-                <MenuItem x:Name="ReconnectWorldMenuItem" Header="Reconnect" Click="ReconnectMenuItem_Click"></MenuItem>
+                <MenuItem Name="NewWorldMenuItem" Header="_New World" Command="New" />
+                <MenuItem Name="OpenWorldMenuItem" Header="_Open World" Command="Open"/>
+                <MenuItem x:Name="SaveWorldMenuItem" Header="_Save World" Command="Save">
+                    <MenuItem.Icon>
+                        <Image Source="pack://siteoforigin:,,,/Resources/copy.ico"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                    
+                <MenuItem x:Name="ReconnectWorldMenuItem" Header="Reconnect" Click="ReconnectMenuItem_Click"
+                          InputGestureText="Ctrl+R"/>
                 <MenuItem x:Name="DisconnectWorldMenuItem"  Header="Disconnect" Click="DisconnectMenuItem_Click"></MenuItem>
                 <MenuItem Header="Quit" Click="QuitMenuItem_Click"></MenuItem>
 

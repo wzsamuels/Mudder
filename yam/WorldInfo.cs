@@ -14,17 +14,43 @@
    limitations under the License.
 
  */
+using System;
+using System.Security.Cryptography;
 
 namespace Yam
 {
     /* Class for storing information about a mud world */
+    [Serializable]
     public class WorldInfo
     {
         public string WorldName { get; set; } = string.Empty;
         public string WorldURL { get; set; } = string.Empty;
         public int WorldPort { get; set; } = 0;
         public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
         public bool AutoLogin { get; set; } = false;
+        private byte[] protectedPassword;
+        private static byte[] entropy = { 9, 8, 7, 6, 5 };
+        public WorldInfo()
+        {
+            /*
+            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(entropy);
+            }*/
+        }
+        public byte[] ProtectedPassword
+        {
+            get
+            {
+                if (protectedPassword != null)
+                {
+                    return (byte[])ProtectedData.Unprotect(protectedPassword, entropy, DataProtectionScope.CurrentUser).Clone();
+                }
+                return (byte[])protectedPassword.Clone();
+            }
+
+            set => protectedPassword =
+                            ProtectedData.Protect(value, entropy, DataProtectionScope.CurrentUser);
+        }
     }
 }

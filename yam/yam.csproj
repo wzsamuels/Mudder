@@ -84,6 +84,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -120,6 +121,7 @@
     <Compile Include="About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -127,9 +129,13 @@
     <Compile Include="NameDictionaryHelper.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="NewWorldWindow.xaml.cs">
+      <DependentUpon>NewWorldWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PreferencesWindow.xaml.cs">
       <DependentUpon>PreferencesWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RichTextBoxExtensions.cs" />
     <Compile Include="WorldCollection.cs" />
     <Compile Include="WorldInfo.cs" />
     <Page Include="About.xaml">
@@ -146,6 +152,10 @@
     </Compile>
     <Compile Include="asyncConnect.cs" />
     <Page Include="newWorld.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="NewWorldWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
