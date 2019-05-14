@@ -151,7 +151,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="asyncConnect.cs" />
-    <Page Include="newWorld.xaml">
+    <Page Include="OpenWorldWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -165,8 +165,8 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="newWorld.xaml.cs">
-      <DependentUpon>newWorld.xaml</DependentUpon>
+    <Compile Include="OpenWorldWindow.xaml.cs">
+      <DependentUpon>OpenWorldWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

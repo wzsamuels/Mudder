@@ -79,8 +79,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <!--         <Ellipse Width="10" Height="10" Fill="DarkGray"/>-->
-                        <TextBlock>Open World</TextBlock>
+                        <TextBlock Text="{Binding WorldNameText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <Grid Margin="0,0,0,0">
@@ -90,9 +89,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="100*"/>
                     </Grid.RowDefinitions>
-
-                        <!--VerticalScrollBarVisibility="Visible"-->
-                        <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
+                    <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
                            ScrollViewer.VerticalScrollBarVisibility="Auto" IsDocumentEnabled="True" IsReadOnly="True"
                         FontSize="16" Background="Black" Foreground="#BEBEBE" TextChanged="MudOutputText_TextChanged"
                         FontFamily = "DejaVu Sans Mono, Courier New">
@@ -101,24 +98,17 @@
                                     <Setter Property="Margin" Value="0"/>
                                 </Style>
                             </RichTextBox.Resources>
-                            <FlowDocument FontSize="16" LineHeight="20">
-                                <!--
-                            <FlowDocument.Resources>
-                                <Style TargetType="{x:Type Paragraph}">
-                                    <Setter Property="LineHeight" Value="20"/>
-                                </Style>
-                            </FlowDocument.Resources>
-                            -->
-                            </FlowDocument>
+                        <FlowDocument FontSize="16" LineHeight="20">
+                        </FlowDocument>
                         </RichTextBox>
 
                 </Grid>
             </TabItem>
-            <!--
+            
             <TabItem Header="Not Useful">
                 <TextBox>Nothing here right now</TextBox>
             </TabItem>
-            -->
+            
         </TabControl>
 
 

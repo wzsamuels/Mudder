@@ -46,7 +46,7 @@ namespace Yam
         #region Private variables
         private AsyncConnect currentWorld = new AsyncConnect();
         private WorldInfo currentWorldInfo = new WorldInfo();
-        private static RoutedCommand openWorldCommand = new RoutedCommand();
+        //private static RoutedCommand openWorldCommand = new RoutedCommand();
         private bool disposed = false;
 
         private static readonly string ConfigFile1
@@ -81,6 +81,7 @@ namespace Yam
 
         //Info vars bound to status bar
         private double _numLinesText = 0;
+        private string _worldNameText = "None";
         private string _worldURLText = "Not connected";
 
         // Command history
@@ -106,6 +107,15 @@ namespace Yam
                 _numLinesText = value;
                 //Notify the binding that the value has changed.
                 this.OnPropertyChanged("numLinesText");
+            }
+        }
+        public string WorldNameText
+        {
+            get { return _worldNameText; }
+            set
+            {
+                _worldNameText = value;
+                this.OnPropertyChanged("WorldNameText");
             }
         }
 
@@ -644,6 +654,7 @@ namespace Yam
 
                     WorldURLText = world.WorldURL + " (" + ipAddress
                         + ") at port " + world.WorldPort;
+                    WorldNameText = world.WorldName;
 
                     if (world.AutoLogin)
                     {
@@ -688,7 +699,19 @@ namespace Yam
         #region File Menu
         private void NewCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            
+            var window = new NewWorldWindow { Owner = this };
+            window.NewWorldSelect = true;
+            bool? result = window.ShowDialog();
+
+            if (result.HasValue && result.Value)
+            {              
+                currentWorldInfo = window.WorldInfo;
+                if (window.SaveLogin)
+                {
+                    WriteConfig(currentWorldInfo);
+                }
+                ConnectToWorld(currentWorldInfo);
+            }
         }
         private void OpenCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
@@ -698,46 +721,24 @@ namespace Yam
         private void OpenWorld()
         {
             var window = new OpenWorldWindow { Owner = this };
-            window.NewWorldSelect = true;
             bool? result = window.ShowDialog();
 
-            if (result.HasValue && result.Value)
+            string path = window.worldList.SelectedValue.ToString();
+            string[] temparray = path.Split(' ');
+
+            foreach (WorldInfo world in ReadConfig().Worlds)
             {
-                if (window.NewWorldSelect)
+                if (temparray[1] == world.WorldName)
                 {
-                    currentWorldInfo = window.WorldInfo;
-                    if (window.SaveLogin)
+                    if (world.ProtectedPassword == null)                         
                     {
-                        WriteConfig(currentWorldInfo);
+                        MessageBox.Show("Error!");
+                        world.ProtectedPassword = Encoding.UTF8.GetBytes("");
                     }
+                    currentWorldInfo = world;
                 }
-                //Load a saved world
-                else
-                {
-
-                    string path = window.worldList.SelectedValue.ToString();
-                    string[] temparray = path.Split(' ');
-
-                    //Load the selected world if it's in the save file
-                    //List<WorldInfo> loadedWorlds = new List<WorldInfo>();
-                    //WorldCollection wc = MainWindow.ReadWorld().Worlds;
-                    //var loadedWorlds = wc.Worlds;
-
-                    foreach (WorldInfo world in ReadConfig().Worlds)
-                    {
-                        if (temparray[1] == world.WorldName)
-                        {
-                            if (world.ProtectedPassword == null)                         
-                            {
-                                MessageBox.Show("Error!");
-                                world.ProtectedPassword = Encoding.UTF8.GetBytes("");
-                            }
-                            currentWorldInfo = world;
-                        }
-                    }
-                }              
-                ConnectToWorld(currentWorldInfo);
-            }
+            }          
+            ConnectToWorld(currentWorldInfo);
         }
 
         private void SaveCommandBinding_Executed(object sender, RoutedEventArgs e)
@@ -867,7 +868,6 @@ namespace Yam
             //WorldCollection data = null;        
             try
             {
-                //using (StreamReader stream = new StreamReader(ConfigFile1))
                 using(Stream stream = new FileStream(ConfigFile2, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read))
                 { 
                     IFormatter formatter = new BinaryFormatter();
