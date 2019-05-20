@@ -7,6 +7,17 @@
         xmlns:uc="clr-namespace:Yam"
         xmlns:local="clr-namespace:Yam"
         Title="MainWindow" Height="700" Width="800" FontSize="14">
+    <Window.CommandBindings>
+        <CommandBinding Command="New" Executed="NewCommandBinding_Executed"/>
+        <CommandBinding Command="Open" Executed="OpenCommandBinding_Executed"/>
+        <CommandBinding Command="Save" Executed="SaveCommandBinding_Executed"/>
+      
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="N" Modifiers="Ctrl" Command="New"/>
+        <KeyBinding Key="O" Modifiers="Ctrl" Command="Open"/>
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="Save"/>
+    </Window.InputBindings>
 
     <Grid Margin="0,0,0,0">
         <Grid.ColumnDefinitions>
@@ -22,12 +33,18 @@
               Width="auto">
             
                 <MenuItem Header="_File">
-                <MenuItem Name="openWorldMenuItem" Header="Open World" 
-                          InputGestureText="Ctrl+O"/>
-                <MenuItem x:Name="saveWorldMenuItem" Header="Save World" Click="saveWorldMenuItem_Click"/>
-                <MenuItem x:Name="reconnectWorldMenuItem" Header="Reconnect" Click="reconnectMenuItem_Click"></MenuItem>
-                <MenuItem x:Name="disconnectWorldMenuItem"  Header="Disconnect" Click="disconnectMenuItem_Click"></MenuItem>
-                <MenuItem Header="Quit" Click="quitMenuItem_Click"></MenuItem>
+                <MenuItem Name="NewWorldMenuItem" Header="_New World" Command="New" />
+                <MenuItem Name="OpenWorldMenuItem" Header="_Open World" Command="Open"/>
+                <MenuItem x:Name="SaveWorldMenuItem" Header="_Save World" Command="Save">
+                    <MenuItem.Icon>
+                        <Image Source="pack://siteoforigin:,,,/Resources/copy.ico"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                    
+                <MenuItem x:Name="ReconnectWorldMenuItem" Header="Reconnect" Click="ReconnectMenuItem_Click"
+                          InputGestureText="Ctrl+R"/>
+                <MenuItem x:Name="DisconnectWorldMenuItem"  Header="Disconnect" Click="DisconnectMenuItem_Click"></MenuItem>
+                <MenuItem Header="Quit" Click="QuitMenuItem_Click"></MenuItem>
 
             </MenuItem>
 
@@ -42,9 +59,9 @@
                 <MenuItem Header="_Paste" Command="Paste"/>
                 <Separator/>
                 <MenuItem x:Name="findMenuItem" Header="_Find" Command="Find"/>
+                <MenuItem Header="Clear" HorizontalAlignment="Left" Click="ClearMenuItem_Click"/>
             </MenuItem>
-                <MenuItem Header="_Tools">
-            <!--<MenuItem Header="_Change Font" Click="fontMenuItem_Click"/>-->
+            <MenuItem Header="_Tools">
                 <MenuItem Header="_Preferences" Click="PrefMenuItem_Click"/>
             </MenuItem>
             <!--
@@ -52,7 +69,7 @@
             <MenuItem Header="_Window" />
              -->
                 <MenuItem Header="_Help">
-                <MenuItem Header="About" Click="aboutMenuItem_Click"/>
+                <MenuItem Header="About" Click="AboutMenuItem_Click"/>
             </MenuItem>
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"></Separator >
                 
@@ -62,8 +79,7 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
-                        <!--         <Ellipse Width="10" Height="10" Fill="DarkGray"/>-->
-                        <TextBlock>Open World</TextBlock>
+                        <TextBlock Text="{Binding WorldNameText}"/>
                     </StackPanel>
                 </TabItem.Header>
                 <Grid Margin="0,0,0,0">
@@ -73,46 +89,37 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="100*"/>
                     </Grid.RowDefinitions>
-
-                        <!--VerticalScrollBarVisibility="Visible"-->
-                        <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
+                    <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
                            ScrollViewer.VerticalScrollBarVisibility="Auto" IsDocumentEnabled="True" IsReadOnly="True"
-                        FontSize="16" Background="Black" Foreground="#BEBEBE" TextChanged="mudOutputText_TextChanged"
+                        FontSize="16" Background="Black" Foreground="#BEBEBE" TextChanged="MudOutputText_TextChanged"
                         FontFamily = "DejaVu Sans Mono, Courier New">
                             <RichTextBox.Resources>
                                 <Style TargetType="{x:Type Paragraph}">
                                     <Setter Property="Margin" Value="0"/>
                                 </Style>
                             </RichTextBox.Resources>
-                            <FlowDocument FontSize="16" LineHeight="20">
-                                <!--
-                            <FlowDocument.Resources>
-                                <Style TargetType="{x:Type Paragraph}">
-                                    <Setter Property="LineHeight" Value="20"/>
-                                </Style>
-                            </FlowDocument.Resources>
-                            -->
-                            </FlowDocument>
+                        <FlowDocument FontSize="16" LineHeight="20">
+                        </FlowDocument>
                         </RichTextBox>
 
                 </Grid>
             </TabItem>
-            <!--
+            
             <TabItem Header="Not Useful">
                 <TextBox>Nothing here right now</TextBox>
             </TabItem>
-            -->
+            
         </TabControl>
 
 
         <TextBox x:Name="userInputText" HorizontalAlignment="Stretch" FontSize="13" TextWrapping="Wrap"
                      Height="40" Grid.Row="2" VerticalAlignment="Bottom" Width="Auto"                      
-                     PreviewKeyDown="userInputText_PreviewKeyDown" SpellCheck.IsEnabled="True" FontFamily="DejaVu Sans Mono"/>
+                     PreviewKeyDown="UserInputText_PreviewKeyDown" SpellCheck.IsEnabled="True" FontFamily="DejaVu Sans Mono"/>
         <StatusBar HorizontalAlignment="Stretch" Height="Auto" Grid.Row="3" 
                    VerticalAlignment="Bottom" Width="Auto">
             <StatusBarItem HorizontalAlignment="Left">
                 <TextBlock Foreground="Black"
-                       Text = "{Binding worldURLText, StringFormat=Connected to: {0}}"/>
+                       Text = "{Binding WorldURLText, StringFormat=Connected to: {0}}"/>
             </StatusBarItem>
             <StatusBarItem HorizontalAlignment="Left">
                 <TextBlock Foreground="Black"
@@ -121,7 +128,7 @@
             
             <StatusBarItem HorizontalAlignment="Right">
                 <TextBlock Foreground="Black" x:Name="worldLabel"
-                       Text = "{Binding numLinesText, StringFormat=Lines Read: {0}}"/>
+                       Text = "{Binding NumLinesText, StringFormat=Lines Read: {0}}"/>
 
             </StatusBarItem>
         </StatusBar>

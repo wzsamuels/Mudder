@@ -15,8 +15,7 @@ namespace Yam
             XmlLanguage userLanguage = XmlLanguage.GetLanguage(CultureInfo.CurrentUICulture.IetfLanguageTag);
 
             // Look for an exact match.
-            string name;
-            if (nameDictionary.TryGetValue(userLanguage, out name))
+            if (nameDictionary.TryGetValue(userLanguage, out string name))
             {
                 return name;
             }
@@ -41,8 +40,7 @@ namespace Yam
         public static string GetDisplayName(IDictionary<CultureInfo, string> nameDictionary)
         {
             // Look for an exact match.
-            string name;
-            if (nameDictionary.TryGetValue(CultureInfo.CurrentUICulture, out name))
+            if (nameDictionary.TryGetValue(CultureInfo.CurrentUICulture, out string name))
             {
                 return name;
             }
