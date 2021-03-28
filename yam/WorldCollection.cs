@@ -14,7 +14,7 @@ namespace Yam
             Worlds = new List<WorldInfo>();
         }
 
-        public List<WorldInfo> Worlds { get; set; }
+        public List<WorldInfo> Worlds { get; }
 
         public void AddWorld(WorldInfo world)
         {

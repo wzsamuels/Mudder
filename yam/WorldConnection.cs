@@ -72,8 +72,6 @@ namespace Yam
                 // Complete the connection.
                 client.EndConnect(ar);
 
-                //stream = client.GetStream();
-
                 // Signal that the connection has been made.
                 connectDone.Set();
             }
@@ -88,7 +86,7 @@ namespace Yam
             try
             {
                 readDone.Reset();
-                StateObject state = new StateObject();
+                StateObject state = new();
 
                 // Begin receiving the data from the remote device.  
                 client.Client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
@@ -217,7 +215,7 @@ namespace Yam
             // Receive buffer.  
             public byte[] buffer = new byte[BufferSize];
             // Received data string.  
-            public StringBuilder sb = new StringBuilder();
+            public StringBuilder sb = new();
             public string readString = string.Empty;
         }
     }

@@ -52,9 +52,9 @@ namespace Yam
         private readonly Timer _readTimer;
 
         //Variables for channel coloring
-        private List<ColoredText> channelList = new();
+        private readonly List<ColoredText> channelList = new();
         //Default colors for channel coloring
-        private Dictionary<Brush, bool> colorsUsed = new()
+        private readonly Dictionary<Brush, bool> colorsUsed = new()
         {
             { Brushes.Maroon, false },
             { Brushes.Beige, false },
@@ -72,7 +72,6 @@ namespace Yam
         };
         //I'm very picky about my shade of gray
         private Brush defaultColor = (SolidColorBrush)new BrushConverter().ConvertFromString("#BEBEBE");
-        private bool first_loop = true;
 
         //Info vars bound to status bar
         private double _numLinesText = 0;
@@ -80,7 +79,7 @@ namespace Yam
         private string _worldURLText = "Not connected";
 
         // Command history
-        private List<string> commandHistory = new();
+        private readonly List<string> commandHistory = new();
         private int commandIndex = 0;
         #endregion
 
@@ -242,48 +241,47 @@ namespace Yam
         private delegate void NoArgDelegate();
         private delegate void OneArgDelegate(List<FormattedText> arg);
 
+        /// <summary>
+        /// Read from the connect world every time _readTimer is triggered
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="e"></param>
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
             if (currentWorld.IsConnected)
             {
-                ReadFromWorld();
-            }
-        }
-        // Read mud output             
-        private void ReadFromWorld()
-        {
-            List<string> rawInput = new();
-            if (currentWorld.IsConnected)
-            {
-                _readTimer.Enabled = false;
-                string buffer = currentWorld.Read();
-
-                //Text is read 
-                if (!String.IsNullOrEmpty(buffer))
+                List<string> rawInput = new();
+                if (currentWorld.IsConnected)
                 {
-                    string[] lines = buffer.Split('\n');
-                    foreach (string line in lines)
+                    _readTimer.Enabled = false;
+                    string buffer = currentWorld.Read();
+
+                    if (!String.IsNullOrEmpty(buffer))
                     {
-                        rawInput.Add(line);
+                        string[] lines = buffer.Split('\n');
+                        foreach (string line in lines)
+                        {
+                            rawInput.Add(line);
+                        }
+                        ScheduleDisplayUpdate(rawInput);
                     }
-                    ScheduleDisplayUpdate(rawInput);
+                    _readTimer.Enabled = true;
                 }
-                _readTimer.Enabled = true;
             }
         }
 
         #region mudOutput Updating
-        private void ScheduleDisplayUpdate(List<string> fromBuffer)
+        private void ScheduleDisplayUpdate(List<string> rawInput)
         {
-            List<FormattedText> mudBuffer = new();
+            List<FormattedText> formattedBuffer = new();
 
-            foreach (FormattedText ft in ParseBuffer(fromBuffer))
-                mudBuffer.Add(ft);
+            foreach (FormattedText ft in ParseBuffer(rawInput))
+                formattedBuffer.Add(ft);
 
             //Use Dispatcher to safely update UI elements
             Dispatcher.BeginInvoke(
                 DispatcherPriority.SystemIdle,
-                    new OneArgDelegate(DrawOutput), mudBuffer);
+                    new OneArgDelegate(DrawOutput), formattedBuffer);
         }
 
         // This updates mudOutputText
@@ -302,43 +300,24 @@ namespace Yam
             for (int i = 0; i < mudBuffer.Count; i++)
             {
                 // Handle hyperlinks
+                string linktext = mudBuffer[i].text;
                 if (mudBuffer[i].isLink)
                 {
-                    string linktext = mudBuffer[i].text;
-                    int index;
                     //Trim off any extra line break the world adds to the end
                     if (i == mudBuffer.Count - 1)
                     {
-                        index = linktext.LastIndexOf("\n", StringComparison.OrdinalIgnoreCase);
-
-                        if (index != -1)
-                        {
-                            linktext = linktext.Remove(index, 1);
-                        }
-
-                        index = linktext.LastIndexOf("\r", StringComparison.OrdinalIgnoreCase);
-
-                        if (index != -1)
-                        {
-                            linktext = linktext.Remove(index, 1);
-                        }
+                        linktext = linktext.TrimEnd(new char[] { '\n', '\r' } );
                     }
-
-                    Hyperlink hlk = new(new Run(linktext));
+                    Hyperlink hlk = new Hyperlink(new Run(linktext));
                     try
                     {
                         //Remove any extra quote marks from around the URL
-                        char[] trim = { '\"', '\n', '\r' };
-                        linktext = mudBuffer[i].text.Trim(trim);
-                        index = linktext.LastIndexOf("\"", StringComparison.OrdinalIgnoreCase);
-                        if (index != -1)
-                        {
-                            linktext = linktext.Remove(index, 1);
-                        }
+                        linktext = linktext.Trim('"');
                         hlk.NavigateUri = new Uri(linktext);
                     }
                     catch (UriFormatException)
                     {
+                        MessageBox.Show($"Not a valid URL: {linktext}");
                         hlk.NavigateUri = new Uri("http://something.went.wrong");
                     }
                     hlk.RequestNavigate += new RequestNavigateEventHandler(Link_RequestNavigate);
@@ -347,17 +326,12 @@ namespace Yam
                 else
                 {
                     newSpan = new Span();
-                    string temp = mudBuffer[i].text;
-                    string text;
+                    string text = mudBuffer[i].text;
                     //Trim off any extra line break the world adds to the end
                     if (i == mudBuffer.Count - 1)
                     {
-                        char[] charsToTrim = { '\n', '\r' };
-                        text = temp.TrimEnd(charsToTrim);
-                    }
-                    else
-                    {
-                        text = temp;
+                        char[] charsToTrim = { '\n', '\r', ' ' };
+                        text = text.TrimEnd(charsToTrim);
                     }
 
                     newSpan = new Span(new Run(text))
@@ -389,214 +363,162 @@ namespace Yam
         /// <returns></returns>
         private List<FormattedText> ParseBuffer(List<string> fromBuffer)
         {
-            List<FormattedText> mudBuffer = new();
+            List<FormattedText> formattedBuffer = new();
 
-            foreach (string Text in fromBuffer)
+            string channelPattern = @"^(\[.*?\])";     // Find [channel] names
+            string connectPattern = @"^(<.+>)"; // Find <connect> messages
+
+            foreach (string line in fromBuffer)
             {
-                if (fromBuffer.Count != 0)
+                string buffer = string.Empty;
+                Brush channelColor = Brushes.AliceBlue; //Text color
+                bool isMatch = false;
+
+                string[] words = line.Split(' ');
+
+                for (int i = 0; i < words.Length; i++)
                 {
-                    if (!string.IsNullOrEmpty(fromBuffer[0]))
+                    #region Channel name coloring
+                    //Detect a channel name with 'pattern' and color             
+                    Regex channelRgx = new Regex(channelPattern, RegexOptions.IgnoreCase);
+                    Match channelMatch = channelRgx.Match(words[i]);
+
+                    Regex connectRgx = new Regex(connectPattern, RegexOptions.IgnoreCase);
+                    Match connectMatch = connectRgx.Match(words[i]);
+
+                    if (channelMatch.Success)
                     {
-                        string buffer = string.Empty;
-                        string result = String.Empty;
-                        string channelText = String.Empty;  //Text to color
-                        Brush channelColor = Brushes.AliceBlue; //Text color
-                        bool isMatch = false;
-                        string pattern = @"^(\[.*?\])";     // Find [channel] names
-                        string connectPattern = @"^(<.+>)"; // Find <connect> messages
+                        string channelName = channelMatch.Groups[1].Value;
 
-                        Regex channelRgx = new(pattern, RegexOptions.IgnoreCase);
-                        Match matchText = channelRgx.Match(Text);
-
-                        Regex connectRgx = new(connectPattern, RegexOptions.IgnoreCase);
-                        Match connectMatch = connectRgx.Match(Text);
-
-                        #region Channel name coloring
-                        //Detect a channel name with 'pattern' and color
-
-                        if (matchText.Success)
+                        foreach (ColoredText channel in channelList)
                         {
-                            channelText = matchText.Groups[1].Value;
-                            if (first_loop == true)
+                            // check to see if the channel already has a color
+                            if (channel.text == channelName)
                             {
-                                foreach (ColoredText channel in channelList)
-                                {
-                                    // check to see if the channel already has a color
-                                    if (channel.text == channelText)
-                                    {
-                                        channelColor = channel.colorName;
-                                        isMatch = true;
-                                        break;
-                                    }
-                                }
-                                // If it doesn't give it one
-                                if (!isMatch)
-                                {
-                                    //If all the colors are in use, recycle the oldest
-                                    if (channelList.Count == colorsUsed.Count)
-                                    {
-                                        colorsUsed[channelList[0].colorName] = false;
-                                        channelList.RemoveAt(0);
-                                    }
-                                    //Loop through the colors and find one not in use
-                                    foreach (KeyValuePair<Brush, bool> kvp in colorsUsed)
-                                    {
-                                        if (kvp.Value == false)
-                                        {
-                                            colorsUsed[kvp.Key] = true;
-                                            channelColor = kvp.Key;
-                                            channelList.Add(new ColoredText() { text = channelText, colorName = channelColor });
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                //If this is the first channel since the program started, make it tomato, why not
-                                first_loop = false;
-                                colorsUsed[Brushes.Maroon] = true;
-                                channelColor = Brushes.Maroon;
-                                channelList.Add(new ColoredText()
-                                {
-                                    text = channelText,
-                                    colorName = channelColor
-                                });
-                            }
-                            //Add the colored name and then remove from Text
-                            //so that Text can be further processed                        
-                            mudBuffer.Add(new FormattedText
-                            {
-                                text = channelText,
-                                color = channelColor,
-                                isLink = false,
-                                weight = FontWeights.Normal
-                            });
-                            result = channelRgx.Replace(Text, "", 1);
-
-                            channelText = String.Empty;
-                            isMatch = false;
-                        }
-                        #endregion
-                        //Color <connect> and </disconnect> messages purple                                                                        
-                        else if (connectMatch.Success)
-                        {
-                            string connectText = connectMatch.Groups[1].Value;
-                            mudBuffer.Add(new FormattedText
-                            {
-                                text = connectText,
-                                color = Brushes.DarkMagenta,
-                                isLink = false,
-                                weight = FontWeights.Normal
-                            });
-                            result = connectRgx.Replace(Text, "", 1);
-                        }
-
-                        string[] words;
-
-                        if (!string.IsNullOrEmpty(result))
-                            words = result.Split(' ');
-                        else
-                            words = Text.Split(' ');
-
-                        int i;
-                        for (i = 0; i < words.Length; i++)
-                        {
-                            if (words[i].Length > 4 && (words[i].StartsWith("http",StringComparison.OrdinalIgnoreCase)
-                                || (words[i].StartsWith("\"http", StringComparison.OrdinalIgnoreCase))))
-                            {
-                                //Flush the buffer
-                                if (!String.IsNullOrEmpty(buffer))
-                                {
-                                    mudBuffer.Add(new FormattedText
-                                    {
-                                        text = buffer,
-                                        color =
-                                        defaultColor,
-                                        isLink = false,
-                                        weight = FontWeights.Normal
-                                    });
-                                }
-                                mudBuffer.Add(new FormattedText
-                                {
-                                    text = words[i],
-                                    color =
-                                    defaultColor,
-                                    isLink = true,
-                                    weight = FontWeights.Normal
-                                });
-
-                                //Add a space after every word unless it's the end of the line
-                                if (i != words.Length - 1)
-                                    mudBuffer.Add(new FormattedText
-                                    {
-                                        text = " ",
-                                        color =
-                                        defaultColor,
-                                        isLink = false,
-                                        weight = FontWeights.Normal
-                                    });
-                                //mudOutputText.AppendText(" ", defaultColor);
-
-                                buffer = String.Empty;
-                            }
-                            else if (words[i] == currentWorldInfo.Username || words[i] == "You")
-                            {
-                                if (!string.IsNullOrEmpty(buffer))
-                                {
-                                    mudBuffer.Add(new FormattedText
-                                    {
-                                        text = buffer,
-                                        color = defaultColor,
-                                        isLink = false,
-                                        weight = FontWeights.Normal
-                                    });
-                                }
-                                mudBuffer.Add(new FormattedText
-                                {
-                                    text = words[i],
-                                    color = Brushes.Green,
-                                    isLink = false,
-                                    weight = FontWeights.Normal
-                                });
-                                if (i != words.Length - 1)
-                                {
-                                    mudBuffer.Add(new FormattedText
-                                    {
-                                        text = " ",
-                                        color = Brushes.Green,
-                                        isLink = false,
-                                        weight = FontWeights.Normal
-                                    });
-                                }
-
-                                buffer = String.Empty;
-                            }
-                            // Everything else
-                            else
-                            {
-                                buffer += words[i];
-                                if (i != words.Length - 1)
-                                    buffer += " ";
+                                channelColor = channel.colorName;
+                                isMatch = true;
+                                break;
                             }
                         }
-                        if (!String.IsNullOrEmpty(buffer))
+                        // If it doesn't give it one
+                        if (!isMatch)
                         {
-                            mudBuffer.Add(new FormattedText
+                            //If all the colors are in use, recycle the oldest
+                            if (channelList.Count == colorsUsed.Count)
                             {
-                                text = buffer,
-                                color = defaultColor,
-                                isLink = false,
-                                weight = FontWeights.Normal
-                            });
+                                colorsUsed[channelList[0].colorName] = false;
+                                channelList.RemoveAt(0);
+                            }
+                            //Loop through the colors and find one not in use
+                            foreach (KeyValuePair<Brush, bool> kvp in colorsUsed)
+                            {
+                                if (kvp.Value == false)
+                                {
+                                    colorsUsed[kvp.Key] = true;
+                                    channelColor = kvp.Key;
+                                    channelList.Add(new ColoredText() { text = channelName, colorName = channelColor });
+                                    break;
+                                }
+                            }
                         }
-                        result = String.Empty;
+                        //Add the colored name                      
+                        formattedBuffer.Add(new FormattedText
+                        {
+                            text = channelName,
+                            color = channelColor,
+                            isLink = false,
+                            weight = FontWeights.Normal
+                        });
+
+                        AddDefaultFormattedText(formattedBuffer, " ");
+                    }
+                    #endregion
+                    //Color <connect> and </disconnect> messages purple                                                                        
+                    else if (connectMatch.Success)
+                    {
+                        string connectText = connectMatch.Groups[1].Value;
+                        formattedBuffer.Add(new FormattedText
+                        {
+                            text = connectText,
+                            color = Brushes.DarkMagenta,
+                            isLink = false,
+                            weight = FontWeights.Normal
+                        });
+
+                        AddDefaultFormattedText(formattedBuffer, " ");
+                    }
+                    else if (words[i].Length > 4 && (words[i].StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                        || (words[i].StartsWith("\"http", StringComparison.OrdinalIgnoreCase))))
+                    {
+                        //Flush the buffer
+                        AddDefaultFormattedText(formattedBuffer, buffer);
                         buffer = String.Empty;
+
+                        // Add formatted hyperlink
+                        formattedBuffer.Add(new FormattedText
+                        {
+                            text = words[i],
+                            color =
+                            defaultColor,
+                            isLink = true,
+                            weight = FontWeights.Normal
+                        });
+
+                        //Add a space after every word unless it's the end of the line
+                        if (i != words.Length - 1)
+                        {
+                            AddDefaultFormattedText(formattedBuffer, " ");
+                        }
+                    }
+                    else if (words[i] == currentWorldInfo.Username || words[i] == "You")
+                    {
+                        // Flush buffer
+                        AddDefaultFormattedText(formattedBuffer, buffer);
+                        buffer = String.Empty;
+
+                        formattedBuffer.Add(new FormattedText
+                        {
+                            text = words[i],
+                            color = Brushes.Green,
+                            isLink = false,
+                            weight = FontWeights.Normal
+                        });
+
+                        if (i != words.Length - 1)
+                        {
+                            AddDefaultFormattedText(formattedBuffer, " ");
+                        }
+                    }
+                    // Everything else
+                    else
+                    {
+                        buffer += words[i];
+                        if (i != words.Length - 1)
+                            buffer += " ";
                     }
                 }
+
+                // Add what's accumulated in the text buffer to the formatted
+                // buffer
+                AddDefaultFormattedText(formattedBuffer, buffer);
+
                 _numLinesText++;
             }
-            return mudBuffer;
+            return formattedBuffer;
+        }
+
+        private void AddDefaultFormattedText(List<FormattedText> buffer, string text)
+        {
+            if (!string.IsNullOrEmpty(text))
+            {
+                buffer.Add(new FormattedText
+                {
+                    text = text,
+                    color = defaultColor,
+                    isLink = false,
+                    weight = FontWeights.Normal
+                });
+            }
         }
 
         /// <summary>
@@ -647,8 +569,6 @@ namespace Yam
 
                     if (world.AutoLogin)
                     {
-                        //string loginString = String.Empty;
-
                         string loginString = "connect " + world.Username + " " +
                             Encoding.UTF8.GetString(world.ProtectedPassword) + "\n";                       
                         currentWorld.Write(loginString);
@@ -668,6 +588,7 @@ namespace Yam
             else
                 mudOutputText.AppendText("\nAlready connected to a world", Brushes.Gold);
         }
+
         private void DisconnectFromWorld()
         {
             mudOutputText.AppendText("\nDisconecting from world...");
@@ -712,22 +633,25 @@ namespace Yam
             var window = new OpenWorldWindow { Owner = this };
             bool? result = window.ShowDialog();
 
-            string path = window.worldList.SelectedValue.ToString();
-            string[] temparray = path.Split(' ');
-
-            foreach (WorldInfo world in ReadConfig().Worlds)
+            if (result == true)
             {
-                if (temparray[1] == world.WorldName)
+                string path = window.worldList.SelectedValue.ToString();
+                string[] temparray = path.Split(' ');
+
+                foreach (WorldInfo world in ReadConfig().Worlds)
                 {
-                    if (world.ProtectedPassword == null)                         
+                    if (temparray[1] == world.WorldName)
                     {
-                        MessageBox.Show("Error!");
-                        world.ProtectedPassword = Encoding.UTF8.GetBytes("");
+                        if (world.ProtectedPassword == null)
+                        {
+                            MessageBox.Show("Error!");
+                            world.ProtectedPassword = Encoding.UTF8.GetBytes("");
+                        }
+                        currentWorldInfo = world;
                     }
-                    currentWorldInfo = world;
                 }
-            }          
-            ConnectToWorld(currentWorldInfo);
+                ConnectToWorld(currentWorldInfo);
+            }
         }
 
         private void SaveCommandBinding_Executed(object sender, RoutedEventArgs e)
@@ -763,21 +687,19 @@ namespace Yam
         private void PrefMenuItem_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FontDialog fd = new();
-            System.ComponentModel.TypeConverter converter =
-                System.ComponentModel.TypeDescriptor.GetConverter(typeof(System.Drawing.Font));
+            TypeConverter converter =
+                TypeDescriptor.GetConverter(typeof(System.Drawing.Font));
 
             string tmpstring = string.Format("{0}, {1}", mudOutputText.Document.FontFamily.ToString().Split(',')[0],
                 mudOutputText.Document.FontSize.ToString());
-            //MessageBox.Show(tmpstring);
+
             System.Drawing.Font font1 = (System.Drawing.Font)converter.ConvertFromString(tmpstring);
             fd.Font = font1;
 
-            //fd.Color = textBox1.ForeColor;
             fd.ShowColor = true; //Enable choosing text color
             var result = fd.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                //MessageBox.Show(String.Format("Font: {0}", fd.Font));
                 mudOutputText.Document.FontFamily = new FontFamily(fd.Font.Name);
                 mudOutputText.Document.FontSize = fd.Font.Size;// * 96.0 / 72.0;
                 mudOutputText.Document.FontWeight = fd.Font.Bold ? FontWeights.Bold : FontWeights.Regular;
@@ -848,14 +770,12 @@ namespace Yam
         public static WorldCollection ReadConfig()
         {
             WorldCollection data = new();
-            //WorldCollection data = null;        
+       
             try
             {
-                using(Stream stream = new FileStream(ConfigFile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read))
-                { 
-                    IFormatter formatter = new BinaryFormatter();
-                    data = (WorldCollection)formatter.Deserialize(stream);
-                }
+                using Stream stream = new FileStream(ConfigFile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
+                IFormatter formatter = new BinaryFormatter();
+                data = (WorldCollection)formatter.Deserialize(stream);
             }
             catch (FileNotFoundException)
             {

@@ -29,7 +29,7 @@ namespace Yam
         public string Username { get; set; } = string.Empty;
         public bool AutoLogin { get; set; } = false;
         private byte[] protectedPassword;
-        private static byte[] entropy = { 9, 8, 7, 6, 5 };
+        private static readonly byte[] entropy = { 9, 8, 7, 6, 5 };
         public WorldInfo()
         {
             /*

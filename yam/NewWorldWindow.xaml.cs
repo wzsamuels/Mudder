@@ -31,17 +31,13 @@ namespace Yam
             worldNameText.Focus();
         }
 
-        public WorldInfo WorldInfo
-        {
-            get
-            {
-                return (UI);
-            }
-        }
+        public WorldInfo WorldInfo => UI;
+
         private void LoginCheck_Checked(object sender, RoutedEventArgs e)
         {
             LoginCheck_Handle(sender as CheckBox);
         }
+
         private void LoginCheck_Unchecked(object sender, RoutedEventArgs e)
         {
             LoginCheck_Handle(sender as CheckBox);
