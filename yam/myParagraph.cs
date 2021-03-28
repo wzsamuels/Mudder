@@ -16,12 +16,10 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Timers;
 using System.Windows.Threading;
-
 using System.ComponentModel;
 
 namespace Yam
 {
-
     public class myParagraph : Paragraph
     {
         protected override void OnInitialized(EventArgs e)

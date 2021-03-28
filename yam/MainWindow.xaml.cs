@@ -42,7 +42,7 @@ namespace Yam
     public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     {
         #region Private variables
-        private AsyncConnect currentWorld = new();
+        private WorldConnection currentWorld = new();
         private WorldInfo currentWorldInfo = new();
         private bool disposed = false;
 
@@ -186,7 +186,7 @@ namespace Yam
                 string prompt = userInputText.Text;
                 if (currentWorld.IsConnected)
                 {
-                    currentWorld.WriteToWorld(prompt);
+                    currentWorld.Write(prompt);
                     commandHistory.Add(prompt);
                     commandIndex = commandHistory.Count - 1;
                     userInputText.Clear();
@@ -622,11 +622,11 @@ namespace Yam
         {
             if (!currentWorld.IsConnected)
             {
-                currentWorld = new AsyncConnect();
+                currentWorld = new WorldConnection();
                 mudOutputText.AppendText("\nConnecting...", Brushes.Gold);
 
-                if (currentWorld.ConnectWorld(world.WorldURL, world.WorldPort))
-                {
+                if(currentWorld.ConnectWorld(world.WorldURL, world.WorldPort))
+                {                    
                     mudOutputText.AppendText("\nConnected!", Brushes.Gold);
 
                     Title = "YAM - " + world.WorldName;
@@ -651,7 +651,7 @@ namespace Yam
 
                         string loginString = "connect " + world.Username + " " +
                             Encoding.UTF8.GetString(world.ProtectedPassword) + "\n";                       
-                        currentWorld.WriteToWorld(loginString);
+                        currentWorld.Write(loginString);
                     }
                     ReconnectWorldMenuItem.IsEnabled = true;
                     DisconnectWorldMenuItem.IsEnabled = true;

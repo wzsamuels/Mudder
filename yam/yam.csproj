@@ -150,7 +150,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="asyncConnect.cs" />
+    <Compile Include="WorldConnection.cs" />
     <Page Include="OpenWorldWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
