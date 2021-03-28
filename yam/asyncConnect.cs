@@ -15,7 +15,6 @@
 
  */
 
-
 using System;
 using System.Net.Sockets;
 using System.Text;
@@ -26,9 +25,9 @@ namespace Yam
 {
     public class AsyncConnect : IDisposable
     {
-        private TcpClient client = new TcpClient();
-        private static ManualResetEvent connectDone =
-            new ManualResetEvent(false);
+        private readonly TcpClient client = new();
+        private static readonly ManualResetEvent connectDone =
+            new(false);
 
         bool disposed = false;
 
@@ -40,14 +39,8 @@ namespace Yam
                 client.BeginConnect(worldName, Port,
                     new AsyncCallback(ConnectCallback), client);
                 connectDone.WaitOne();
-                if (client.Connected)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+
+                return client.Connected;
             }
             catch (SocketException e)
             {
@@ -81,7 +74,7 @@ namespace Yam
 
         public string Read()
         {
-            StringBuilder myCompleteMessage = new StringBuilder();
+            StringBuilder myCompleteMessage = new();
             NetworkStream stream = client.GetStream();
 
             if (stream.CanRead && client.Available > 0)
@@ -89,19 +82,14 @@ namespace Yam
                 // Incoming message may be larger than the buffer size. 
                 while (stream.DataAvailable)
                 {
-                    //byte[] myReadBuffer = new byte[1024];
                     byte[] myReadBuffer = new byte[client.Available];
                     int numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
 
                     myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
                 }
-                // Return the received message
-                return myCompleteMessage.ToString();
             }
-            else
-            {
-                return myCompleteMessage.ToString();
-            }
+
+            return myCompleteMessage.ToString();
         }
 
         public bool IsConnected
@@ -115,6 +103,7 @@ namespace Yam
             {
                 client.GetStream().Close();
                 client.Close();
+                connectDone.Close();
 
                 return true;
             }
@@ -146,9 +135,7 @@ namespace Yam
             {
                 client.GetStream().Close();
                 client.Close();
-                //curr
-                // Free any other managed objects here.
-                //
+
             }
             disposed = true;
         }

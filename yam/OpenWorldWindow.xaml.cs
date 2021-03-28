@@ -16,12 +16,9 @@
  */
 
 using System;
-using System.Text;
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Collections.ObjectModel;
-using System.Windows.Media;
 
 namespace Yam
 {
@@ -38,14 +35,14 @@ namespace Yam
 
 
 
-            ObservableCollection<ListBoxItem> listItems = new ObservableCollection<ListBoxItem>();
+            ObservableCollection<ListBoxItem> listItems = new();
 
             var loadedWorlds = MainWindow.ReadConfig().Worlds;
             if (loadedWorlds != null)
             {
                 foreach (WorldInfo world in MainWindow.ReadConfig().Worlds)
                 {
-                    ListBoxItem worldItem = new ListBoxItem
+                    ListBoxItem worldItem = new()
                     {
                         Content = world.WorldName,
                         Name = world.WorldName
@@ -74,21 +71,21 @@ namespace Yam
             }
             else
             {
-                this.DialogResult = false;
-                this.Close();
+                DialogResult = false;
+                Close();
             }            
         }
         private void CancelNewWorldButton_Click(object sender, EventArgs e)
         {
-            this.DialogResult = false;
-            this.Close();
+            DialogResult = false;
+            Close();
         }
 
         private void CloseWindow()
         {
            
-            this.DialogResult = true;
-            this.Close();
+            DialogResult = true;
+            Close();
         }
     }
 

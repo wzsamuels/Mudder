@@ -31,8 +31,6 @@ using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Timers;
 using System.Windows.Threading;
-using System.Xml;
-using System.Xml.Serialization;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -44,22 +42,19 @@ namespace Yam
     public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     {
         #region Private variables
-        private AsyncConnect currentWorld = new AsyncConnect();
-        private WorldInfo currentWorldInfo = new WorldInfo();
-        //private static RoutedCommand openWorldCommand = new RoutedCommand();
+        private AsyncConnect currentWorld = new();
+        private WorldInfo currentWorldInfo = new();
         private bool disposed = false;
 
-        private static readonly string ConfigFile1
-            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam", "world.cfg");
-        private static readonly string ConfigFile2
+        private static readonly string ConfigFile
             = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam", "world.bin");
         //Timer to read from open world
         private readonly Timer _readTimer;
 
         //Variables for channel coloring
-        private List<ColoredText> channelList = new List<ColoredText>();
+        private List<ColoredText> channelList = new();
         //Default colors for channel coloring
-        private Dictionary<Brush, bool> colorsUsed = new Dictionary<Brush, bool>
+        private Dictionary<Brush, bool> colorsUsed = new()
         {
             { Brushes.Maroon, false },
             { Brushes.Beige, false },
@@ -85,7 +80,7 @@ namespace Yam
         private string _worldURLText = "Not connected";
 
         // Command history
-        private List<string> commandHistory = new List<string>();
+        private List<string> commandHistory = new();
         private int commandIndex = 0;
         #endregion
 
@@ -96,7 +91,7 @@ namespace Yam
             {
                 _worldURLText = value;
                 //Notify the binding that the value has changed.
-                this.OnPropertyChanged("worldURLText");
+                OnPropertyChanged("worldURLText");
             }
         }
         public double NumLinesText
@@ -106,7 +101,7 @@ namespace Yam
             {
                 _numLinesText = value;
                 //Notify the binding that the value has changed.
-                this.OnPropertyChanged("numLinesText");
+                OnPropertyChanged("numLinesText");
             }
         }
         public string WorldNameText
@@ -115,7 +110,7 @@ namespace Yam
             set
             {
                 _worldNameText = value;
-                this.OnPropertyChanged("WorldNameText");
+                OnPropertyChanged("WorldNameText");
             }
         }
 
@@ -124,7 +119,6 @@ namespace Yam
         {
             public string text;
             public Brush colorName;
-
         }
         struct FormattedText
         {
@@ -134,14 +128,12 @@ namespace Yam
             public bool isLink;
         }
 
-
-
         public MainWindow()
         {
             InitializeComponent();
 
-            this.Title = "YAM";
-            this.DataContext = this; //So variables can bind to UI
+            Title = "YAM";
+            DataContext = this; //So variables can bind to UI
 
             userInputText.Focus();
             userInputText.Clear();
@@ -153,9 +145,9 @@ namespace Yam
             _readTimer = new Timer(60);
             _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
         }
+
         public void Dispose()
         {
-
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -170,8 +162,6 @@ namespace Yam
             {
                 _readTimer.Dispose();
                 currentWorld.Dispose();
-                // Free any other managed objects here.
-                //
             }
             disposed = true;
         }
@@ -210,24 +200,24 @@ namespace Yam
             //Scroll up through command history
             else if (e.Key == Key.Up)
             {
-
                 if ((commandHistory.Count > 0) && userInputText.CaretIndex == 0)
                 {
                     userInputText.Clear();
                     userInputText.Text = commandHistory.ElementAt(commandIndex);
                     if (commandIndex != 0)
                         commandIndex--;
+                    e.Handled = true;
                 }
             }
             else if (e.Key == Key.Down)
             {
-
                 if ((commandHistory.Count > 0) && userInputText.CaretIndex == 0)
                 {
                     userInputText.Clear();
                     userInputText.Text = commandHistory.ElementAt(commandIndex);
                     if (commandIndex != commandHistory.Count - 1)
                         commandIndex++;
+                    e.Handled = true;
                 }
             }
             //PageUp/Down should scroll the output up and down instead of the input box
@@ -242,6 +232,7 @@ namespace Yam
                 e.Handled = true;
             }
         }
+
         //Open URLs in a browser when clicked
         private void RequestNavigateHandler(object sender, RequestNavigateEventArgs e)
         {
@@ -261,7 +252,7 @@ namespace Yam
         // Read mud output             
         private void ReadFromWorld()
         {
-            List<string> rawInput = new List<string>();
+            List<string> rawInput = new();
             if (currentWorld.IsConnected)
             {
                 _readTimer.Enabled = false;
@@ -284,7 +275,7 @@ namespace Yam
         #region mudOutput Updating
         private void ScheduleDisplayUpdate(List<string> fromBuffer)
         {
-            List<FormattedText> mudBuffer = new List<FormattedText>();
+            List<FormattedText> mudBuffer = new();
 
             foreach (FormattedText ft in ParseBuffer(fromBuffer))
                 mudBuffer.Add(ft);
@@ -299,8 +290,8 @@ namespace Yam
         private void DrawOutput(List<FormattedText> mudBuffer)
         {
             //Use newPara and newSpan for buffering
-            Paragraph newPara = new Paragraph();
-            Span newSpan = new Span();
+            Paragraph newPara = new ();
+            Span newSpan = new();
 
             newPara.FontSize = mudOutputText.Document.FontSize;
             //Add a little bit of padding around the text lines
@@ -308,10 +299,9 @@ namespace Yam
             newPara.LineHeight = mudOutputText.Document.FontSize +
                 (mudOutputText.Document.FontSize / 4);
 
-            char[] charsToTrim = { '\n', '\r' };
-
             for (int i = 0; i < mudBuffer.Count; i++)
             {
+                // Handle hyperlinks
                 if (mudBuffer[i].isLink)
                 {
                     string linktext = mudBuffer[i].text;
@@ -319,12 +309,11 @@ namespace Yam
                     //Trim off any extra line break the world adds to the end
                     if (i == mudBuffer.Count - 1)
                     {
-                        index = linktext.LastIndexOf("\n",StringComparison.OrdinalIgnoreCase);
+                        index = linktext.LastIndexOf("\n", StringComparison.OrdinalIgnoreCase);
 
                         if (index != -1)
                         {
                             linktext = linktext.Remove(index, 1);
-                            //linktext = linktext.Insert(index, "\n");
                         }
 
                         index = linktext.LastIndexOf("\r", StringComparison.OrdinalIgnoreCase);
@@ -335,7 +324,7 @@ namespace Yam
                         }
                     }
 
-                    Hyperlink hlk = new Hyperlink(new Run(linktext));
+                    Hyperlink hlk = new(new Run(linktext));
                     try
                     {
                         //Remove any extra quote marks from around the URL
@@ -363,7 +352,7 @@ namespace Yam
                     //Trim off any extra line break the world adds to the end
                     if (i == mudBuffer.Count - 1)
                     {
-
+                        char[] charsToTrim = { '\n', '\r' };
                         text = temp.TrimEnd(charsToTrim);
                     }
                     else
@@ -400,7 +389,7 @@ namespace Yam
         /// <returns></returns>
         private List<FormattedText> ParseBuffer(List<string> fromBuffer)
         {
-            List<FormattedText> mudBuffer = new List<FormattedText>();
+            List<FormattedText> mudBuffer = new();
 
             foreach (string Text in fromBuffer)
             {
@@ -416,10 +405,10 @@ namespace Yam
                         string pattern = @"^(\[.*?\])";     // Find [channel] names
                         string connectPattern = @"^(<.+>)"; // Find <connect> messages
 
-                        Regex channelRgx = new Regex(pattern, RegexOptions.IgnoreCase);
+                        Regex channelRgx = new(pattern, RegexOptions.IgnoreCase);
                         Match matchText = channelRgx.Match(Text);
 
-                        Regex connectRgx = new Regex(connectPattern, RegexOptions.IgnoreCase);
+                        Regex connectRgx = new(connectPattern, RegexOptions.IgnoreCase);
                         Match connectMatch = connectRgx.Match(Text);
 
                         #region Channel name coloring
@@ -640,7 +629,7 @@ namespace Yam
                 {
                     mudOutputText.AppendText("\nConnected!", Brushes.Gold);
 
-                    this.Title = "YAM - " + world.WorldName;
+                    Title = "YAM - " + world.WorldName;
 
                     //Display the world URL and IP in the status bar
                     IPHostEntry Host = Dns.GetHostEntry(world.WorldURL);
@@ -759,22 +748,21 @@ namespace Yam
             if (MessageBox.Show("Are you sure you want to quit?", "Exit",
                 MessageBoxButton.OKCancel) == MessageBoxResult.OK)
             {
-                this.Close();
+                Close();
             }
         }
         #endregion
         #region About Menu
         private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            About box = new About();
+            About box = new();
             box.Show();
         }
         #endregion       
         #region Edit Menu Click Code
         private void PrefMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FontDialog fd =
-                new System.Windows.Forms.FontDialog();
+            System.Windows.Forms.FontDialog fd = new();
             System.ComponentModel.TypeConverter converter =
                 System.ComponentModel.TypeDescriptor.GetConverter(typeof(System.Drawing.Font));
 
@@ -829,9 +817,9 @@ namespace Yam
                     MessageBox.Show("Created dir!");
                 }
             }
-            WorldCollection tempwc = new WorldCollection();
+            WorldCollection tempwc = new();
             ///If there's already saved worlds, load them
-            if (File.Exists(ConfigFile2))
+            if (File.Exists(ConfigFile))
             {
                 tempwc = ReadConfig();
             }
@@ -840,7 +828,7 @@ namespace Yam
             try
             {
                 tempwc.AddWorld(data); //Add world to list (not overwriting)
-                Stream stream = new FileStream(ConfigFile2, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
+                Stream stream = new FileStream(ConfigFile, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
                 formatter.Serialize(stream, tempwc);
             }
 
@@ -856,19 +844,14 @@ namespace Yam
             {
                 MessageBox.Show("There is insufficient memory to read the file.");
             }
-
-            finally
-            {
-                //if (wcWriter != null) wcWriter.Dispose();
-            }
         }
         public static WorldCollection ReadConfig()
         {
-            WorldCollection data = new WorldCollection();
+            WorldCollection data = new();
             //WorldCollection data = null;        
             try
             {
-                using(Stream stream = new FileStream(ConfigFile2, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read))
+                using(Stream stream = new FileStream(ConfigFile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read))
                 { 
                     IFormatter formatter = new BinaryFormatter();
                     data = (WorldCollection)formatter.Deserialize(stream);
@@ -876,11 +859,11 @@ namespace Yam
             }
             catch (FileNotFoundException)
             {
-
+                MessageBox.Show("Config file not found");
             }
             catch (DirectoryNotFoundException)
             {
-
+                MessageBox.Show("Config file directory not found");
             }
             return data;
         }
