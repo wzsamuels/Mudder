@@ -19,6 +19,7 @@ using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace Yam
@@ -30,10 +31,7 @@ namespace Yam
     public class WorldConnection : IDisposable
     {
         private readonly TcpClient client = new();
-
         private readonly ManualResetEvent connectDone = new(false);
-        private readonly ManualResetEvent sendDone = new(false);
-        private readonly ManualResetEvent readDone = new(false);
 
         bool disposed = false;
 
@@ -81,65 +79,19 @@ namespace Yam
             }
         }
 
-        public string Read()
+        public async Task<string> ReadyAsync()
         {
-            try
+            StringBuilder sb = new();
+            NetworkStream stream = client.GetStream();
+
+            while (stream.DataAvailable)
             {
-                readDone.Reset();
-                StateObject state = new();
-
-                // Begin receiving the data from the remote device.  
-                client.Client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                    new AsyncCallback(ReceiveCallback), state);
-                readDone.WaitOne();
-
-                return state.readString;
+                byte[] buffer = new byte[client.Available];
+                await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+                sb.AppendFormat("{0}", Encoding.UTF8.GetString(buffer));
             }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
 
-        private void ReceiveCallback(IAsyncResult ar)
-        {
-            try
-            {
-                // Retrieve the state object and the client socket
-                // from the asynchronous state object.  
-                StateObject state = (StateObject)ar.AsyncState;
-
-                // Read data from the remote device.  
-                int bytesRead = client.Client.EndReceive(ar);
-
-                if (bytesRead > 0)
-                {
-                    // There might be more data, so store the data received so far.  
-                    state.sb.Append(Encoding.ASCII.GetString(state.buffer, 0, bytesRead));
-
-                    // Get the rest of the data.  
-                    if (client.Available > 0)
-                    {
-                        client.Client.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
-                        new AsyncCallback(ReceiveCallback), state);
-                    }
-
-                    else
-                    {
-                        // All the data has arrived; put it in response.  
-                        if (state.sb.Length > 1)
-                        {
-                            state.readString = state.sb.ToString();
-                        }
-                        // Signal that all bytes have been received.  
-                        readDone.Set();
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return sb.ToString();
         }
 
         public bool IsConnected
@@ -160,33 +112,12 @@ namespace Yam
                 return false;
         }
 
-        public void Write(String data)
+        public async Task WriteAsync(String data)
         {
             data += "\n";
             byte[] byteData = Encoding.UTF8.GetBytes(data);
 
-            sendDone.Reset();
-            // Begin sending the data to the remote device.  
-            client.Client.BeginSend(byteData, 0, byteData.Length, 0,
-                new AsyncCallback(SendCallback), null);
-            sendDone.WaitOne();
-        }
-
-        private void SendCallback(IAsyncResult ar)
-        {
-            try
-            {
-                // Complete sending the data to the remote device.  
-                int bytesSent = client.Client.EndSend(ar);
-                Console.WriteLine("Sent {0} bytes to server.", bytesSent);
-
-                // Signal that all bytes have been sent.  
-                sendDone.Set();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            await client.GetStream().WriteAsync(byteData, 0, byteData.Length).ConfigureAwait(false);
         }
 
         public void Dispose()

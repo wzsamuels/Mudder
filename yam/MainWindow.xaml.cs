@@ -33,6 +33,7 @@ using System.Timers;
 using System.Windows.Threading;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 
 namespace Yam
 {
@@ -142,7 +143,7 @@ namespace Yam
 
             //For getting data from world
             _readTimer = new Timer(60);
-            _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            _readTimer.Elapsed += new ElapsedEventHandler(OnTimedEventAsync);
         }
 
         public void Dispose()
@@ -177,7 +178,7 @@ namespace Yam
         /// <summary>
         /// Handle the KeyDown event to determine the type of character entered into the control. 
         /// </summary>
-        private void UserInputText_PreviewKeyDown(object sender, KeyEventArgs e)
+        private async void UserInputText_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             // Send userInputText to connected world on Return
             if (e.Key == Key.Return)
@@ -185,10 +186,13 @@ namespace Yam
                 string prompt = userInputText.Text;
                 if (currentWorld.IsConnected)
                 {
-                    currentWorld.Write(prompt);
+                    await currentWorld.WriteAsync(prompt).ConfigureAwait(false);
                     commandHistory.Add(prompt);
                     commandIndex = commandHistory.Count - 1;
-                    userInputText.Clear();
+                    Dispatcher.Invoke(() =>
+                    {
+                        userInputText.Clear();
+                    });                    
                 }
                 else
                 {
@@ -246,7 +250,7 @@ namespace Yam
         /// </summary>
         /// <param name="source"></param>
         /// <param name="e"></param>
-        private void OnTimedEvent(object source, ElapsedEventArgs e)
+        private async void OnTimedEventAsync(object source, ElapsedEventArgs e)
         {
             if (currentWorld.IsConnected)
             {
@@ -254,7 +258,7 @@ namespace Yam
                 if (currentWorld.IsConnected)
                 {
                     _readTimer.Enabled = false;
-                    string buffer = currentWorld.Read();
+                    string buffer = await currentWorld.ReadyAsync().ConfigureAwait(false);
 
                     if (!String.IsNullOrEmpty(buffer))
                     {
@@ -284,7 +288,7 @@ namespace Yam
                     new OneArgDelegate(DrawOutput), formattedBuffer);
         }
 
-        // This updates mudOutputText
+        // This updates mudOutputText on the UI thread
         private void DrawOutput(List<FormattedText> mudBuffer)
         {
             //Use newPara and newSpan for buffering
@@ -571,7 +575,7 @@ namespace Yam
                     {
                         string loginString = "connect " + world.Username + " " +
                             Encoding.UTF8.GetString(world.ProtectedPassword) + "\n";                       
-                        currentWorld.Write(loginString);
+                        currentWorld.WriteAsync(loginString);
                     }
                     ReconnectWorldMenuItem.IsEnabled = true;
                     DisconnectWorldMenuItem.IsEnabled = true;
