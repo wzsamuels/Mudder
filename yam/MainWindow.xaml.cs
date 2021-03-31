@@ -34,6 +34,7 @@ using System.Windows.Threading;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
+using System.Net.Sockets;
 
 namespace Yam
 {
@@ -538,63 +539,72 @@ namespace Yam
             if (!currentWorld.IsConnected)
             {
                 currentWorld = new WorldConnection();
-                mudOutputText.AppendText("\nConnecting...", Brushes.Gold);
+                mudOutputText.AppendText($"\nConnecting to {world.WorldName} at {world.WorldURL} at port {world.WorldPort}...", Brushes.Gold);
 
-                if(currentWorld.ConnectWorld(world.WorldURL, world.WorldPort))
-                {                    
-                    mudOutputText.AppendText("\nConnected!", Brushes.Gold);
-
-                    Title = "YAM - " + world.WorldName;
-
-                    //Display the world URL and IP in the status bar
-                    IPHostEntry Host = Dns.GetHostEntry(world.WorldURL);
-                    string ipAddress = String.Empty;
-                    for (int i = 0; i < Host.AddressList.Length; i++)
-                    {
-                        ipAddress += Host.AddressList[i].ToString();
-                        if (i != Host.AddressList.Length - 1)
-                            ipAddress += ", ";
-                    }
-
-                    WorldURLText = world.WorldURL + " (" + ipAddress
-                        + ") at port " + world.WorldPort;
-                    WorldNameText = world.WorldName;
+                try
+                {
+                    await currentWorld.ConnectAsync(world.WorldURL, world.WorldPort).ConfigureAwait(false);
 
                     if (world.AutoLogin)
                     {
                         string loginString = "connect " + world.Username + " " +
-                            Encoding.UTF8.GetString(world.ProtectedPassword) + "\n";                       
+                            Encoding.UTF8.GetString(world.ProtectedPassword) + "\n";
                         await currentWorld.WriteAsync(loginString).ConfigureAwait(false);
                     }
+
+                    // Update UI elements
                     Dispatcher.Invoke(() =>
                     {
+                        mudOutputText.AppendText("\nConnected!", Brushes.Gold);
+
+                        Title = "YAM - " + world.WorldName;
+
+                        //Display the world URL and IP in the status bar
+                        IPHostEntry Host = Dns.GetHostEntry(world.WorldURL);
+                        string ipAddress = String.Empty;
+                        for (int i = 0; i < Host.AddressList.Length; i++)
+                        {
+                            ipAddress += Host.AddressList[i].ToString();
+                            if (i != Host.AddressList.Length - 1)
+                                ipAddress += ", ";
+                        }
+
+                        WorldURLText = world.WorldURL + " (" + ipAddress
+                            + ") at port " + world.WorldPort;
+                        WorldNameText = world.WorldName;
+                    
                         ReconnectWorldMenuItem.IsEnabled = true;
                         DisconnectWorldMenuItem.IsEnabled = true;
                     });
                     //Enable timer that reads from world
                     _readTimer.Enabled = true;
                 }
-                else
+                catch(SocketException)
                 {
-                    string temp = "\nError connecting to " + world.WorldName +
-                        " at " + world.WorldURL + " at port " + world.WorldPort;
-                    mudOutputText.AppendText(temp, Brushes.Gold);
+                    Dispatcher.Invoke(() => 
+                    { 
+                        mudOutputText.AppendText($"\nError connecting to {world.WorldName} at {world.WorldURL} at port {world.WorldPort}", Brushes.Gold);
+                    });
+                }
+                catch(Exception)
+                {
+                    throw;
                 }
             }
             else
-                mudOutputText.AppendText("\nAlready connected to a world", Brushes.Gold);
+                mudOutputText.AppendText("\nAlready connected to a world.", Brushes.Gold);
         }
 
         private void DisconnectFromWorld()
         {
-            mudOutputText.AppendText("\nDisconecting from world...");
+            mudOutputText.AppendText($"\nDisconecting from {_worldNameText}...", Brushes.Gold);
             if (currentWorld.Disconnect())
             {
-                mudOutputText.AppendText("\nDisconnected from world.", Brushes.Gold);
+                mudOutputText.AppendText("\nDisconnected.", Brushes.Gold);
             }
             else
             {
-                mudOutputText.AppendText("\nCould not disconnect. Must already be disconnected!", Brushes.Gold);               
+                mudOutputText.AppendText("\nNot connected to any world.", Brushes.Gold);               
             }
             DisconnectWorldMenuItem.IsEnabled = false;
             ReconnectWorldMenuItem.IsEnabled = false;
@@ -606,10 +616,9 @@ namespace Yam
         private void NewCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             var window = new NewWorldWindow { Owner = this };
-            window.NewWorldSelect = true;
             bool? result = window.ShowDialog();
-
-            if (result.HasValue && result.Value)
+           
+            if (result == true)
             {              
                 currentWorldInfo = window.WorldInfo;
                 if (window.SaveLogin)

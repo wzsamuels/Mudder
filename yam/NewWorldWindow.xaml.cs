@@ -12,159 +12,115 @@ namespace Yam
     public partial class NewWorldWindow : Window
     { 
 
-        public WorldInfo UI { get; set; } = new WorldInfo();
-        public bool NewWorldSelect { get; set; } = false;
-        private bool AutoLogin { get; set; } = false;
+        public WorldInfo WorldInfo { get; set; } = new WorldInfo();
+        private bool AutoLogin = false;
         public bool SaveLogin { get; set; } = false;
 
         public NewWorldWindow()
         {
             InitializeComponent();
 
+            //Set up UI defaults
             usernameText.IsEnabled = false;
             passwordText.IsEnabled = false;
             usernameBlock.Foreground = Brushes.Gray;
             passwordBlock.Foreground = Brushes.Gray;
 
-            //Set up UI defaults
-
             worldNameText.Focus();
         }
 
-        public WorldInfo WorldInfo => UI;
-
+        /*
+         */ 
         private void LoginCheck_Checked(object sender, RoutedEventArgs e)
         {
-            LoginCheck_Handle(sender as CheckBox);
+            usernameText.IsEnabled = true;
+            passwordText.IsEnabled = true;
+
+            usernameBlock.Foreground = Brushes.Black;
+            passwordBlock.Foreground = Brushes.Black;
         }
 
         private void LoginCheck_Unchecked(object sender, RoutedEventArgs e)
         {
-            LoginCheck_Handle(sender as CheckBox);
+            usernameText.IsEnabled = false;
+            passwordText.IsEnabled = false;
+
+            usernameBlock.Foreground = Brushes.Gray;
+            passwordBlock.Foreground = Brushes.Gray;
         }
 
-        private void LoginCheck_Handle(CheckBox checkBox)
-        {
-            // Use IsChecked.
-            if (loginCheck.IsChecked.HasValue && loginCheck.IsChecked.Value)
-            {
-                usernameText.IsEnabled = true;
-                passwordText.IsEnabled = true;
-
-                usernameBlock.Foreground = Brushes.Black;
-                passwordBlock.Foreground = Brushes.Black;
-
-                AutoLogin = true;
-            }
-            else
-            {
-                usernameText.IsEnabled = false;
-                passwordText.IsEnabled = false;
-
-                usernameBlock.Foreground = Brushes.Gray;
-                passwordBlock.Foreground = Brushes.Gray;
-
-                AutoLogin = false;
-            }
-
-        }
-
-        private void SaveLoginCheck_Checked(object sender, RoutedEventArgs e)
-        {
-            SaveLogin_Handle(sender as CheckBox);
-        }
-
-        private void SaveLoginCheck_Unchecked(object sender, RoutedEventArgs e)
-        {
-            SaveLogin_Handle(sender as CheckBox);
-        }
-
-        private void SaveLogin_Handle(CheckBox checkBox)
-        {
-            // Use IsChecked.
-            if (passwordCheck.IsChecked.HasValue && passwordCheck.IsChecked.Value)
-            {
-                SaveLogin = true;
-            }
-            else
-            {
-                SaveLogin = false;
-            }
-
-        }
         private void OkNewWorldButton_Click(object sender, EventArgs e)
         {
             string worldNameTemp = worldNameText.Text.Trim();
             string worldURLTemp = worldURLText.Text.Trim();
 
-            bool errorMessage = false;
+            StringBuilder errorMessage = new();
 
-            NewWorldSelect = true;
+            /* 
+             * Check that the input fields are valid. If not build a error 
+             * message string explaining the problems.
+             */
             if (worldNameTemp.Length > 0)
             {
-                UI.WorldName = worldNameTemp;
+                WorldInfo.WorldName = worldNameTemp;
             }
             else
             {
-                errorMessage = true;
+                errorMessage.AppendLine("Please enter a world name.");
             }
 
             if (worldURLTemp.Length > 0)
             {
-                UI.WorldURL = worldURLTemp;
+                WorldInfo.WorldURL = worldURLTemp;
             }
             else
             {
-                errorMessage = true;
+                errorMessage.AppendLine("Please enter a world URL.");
             }
 
             if (worldPortText.Text.Trim().Length > 0)
             {
-                int worldPortTemp;
-                //Let's make sure the user actually entered a number for the port
                 try
                 {
-                    worldPortTemp = Convert.ToInt32(worldPortText.Text.Trim());
+                    WorldInfo.WorldPort = Convert.ToInt32(worldPortText.Text.Trim());
                 }
                 catch (FormatException)
                 {
-                    errorMessage = true;
-                    worldPortTemp = 0;
+                    errorMessage.AppendLine("Please enter a valid port address.");
                 }
-                UI.WorldPort = worldPortTemp;
             }
             else
             {
-                errorMessage = true;
+                errorMessage.AppendLine("Please enter a port address.");
             }
-            if (errorMessage)
+
+            if (errorMessage.Length != 0)
             {
-                MessageBox.Show("Input Field(s) are empty or invalid");
+                MessageBox.Show(this, $"{errorMessage}", "Invalid World Information",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
             else
             {
-                UI.AutoLogin = AutoLogin;
-                NewWorldSelect = true;
-                CloseWindow();
-            }       
-            if (AutoLogin)
-            {
-                UI.Username = usernameText.Text.Trim();
-                string tempPass = passwordText.Text.Trim();
-                byte[] bytePass = Encoding.UTF8.GetBytes(tempPass);
-                UI.ProtectedPassword = bytePass;
-            }
+                SaveLogin = (bool)passwordCheck.IsChecked;
+                AutoLogin = (bool)loginCheck.IsChecked;
+
+                if (AutoLogin)
+                {
+                    WorldInfo.AutoLogin = AutoLogin;
+                    WorldInfo.Username = usernameText.Text.Trim();
+                    string tempPass = passwordText.Text.Trim();
+                    byte[] bytePass = Encoding.UTF8.GetBytes(tempPass);
+                    WorldInfo.ProtectedPassword = bytePass;
+                }
+
+                DialogResult = true;
+                Close();
+            }                              
         }
 
         private void CancelNewWorldButton_Click(object sender, EventArgs e)
         {
             DialogResult = false;
-            Close();
-        }
-
-        private void CloseWindow()
-        {
-            DialogResult = true;
             Close();
         }
     }

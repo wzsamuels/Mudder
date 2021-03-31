@@ -35,6 +35,11 @@ namespace Yam
 
         bool disposed = false;
 
+        public async Task ConnectAsync(string host, int port)
+        {
+            await client.ConnectAsync(host, port).ConfigureAwait(false);
+        }
+
         public bool ConnectWorld(string worldName, int Port)
         {
             try
@@ -86,6 +91,14 @@ namespace Yam
             return sb.ToString();
         }
 
+        public async Task WriteAsync(String data)
+        {
+            data += "\n";
+            byte[] byteData = Encoding.UTF8.GetBytes(data);
+
+            await client.GetStream().WriteAsync(byteData, 0, byteData.Length).ConfigureAwait(false);
+        }
+
         public bool IsConnected
         {
             get { return client.Connected; }
@@ -102,15 +115,7 @@ namespace Yam
             }
             else
                 return false;
-        }
-
-        public async Task WriteAsync(String data)
-        {
-            data += "\n";
-            byte[] byteData = Encoding.UTF8.GetBytes(data);
-
-            await client.GetStream().WriteAsync(byteData, 0, byteData.Length).ConfigureAwait(false);
-        }
+        }       
 
         public void Dispose()
         {
