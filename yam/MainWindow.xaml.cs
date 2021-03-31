@@ -242,7 +242,6 @@ namespace Yam
             Process.Start(e.Uri.ToString());
         }
 
-        private delegate void NoArgDelegate();
         private delegate void OneArgDelegate(List<FormattedText> arg);
 
         /// <summary>
@@ -251,36 +250,24 @@ namespace Yam
         /// <param name="source"></param>
         /// <param name="e"></param>
         private async void OnTimedEventAsync(object source, ElapsedEventArgs e)
-        {
+        {                  
             if (currentWorld.IsConnected)
             {
-                List<string> rawInput = new();
-                if (currentWorld.IsConnected)
-                {
-                    _readTimer.Enabled = false;
-                    string buffer = await currentWorld.ReadyAsync().ConfigureAwait(false);
+                _readTimer.Enabled = false;
+                string rawInput = await currentWorld.ReadyAsync().ConfigureAwait(false);
 
-                    if (!String.IsNullOrEmpty(buffer))
-                    {
-                        string[] lines = buffer.Split('\n');
-                        foreach (string line in lines)
-                        {
-                            rawInput.Add(line);
-                        }
-                        ScheduleDisplayUpdate(rawInput);
-                    }
-                    _readTimer.Enabled = true;
+                if (!String.IsNullOrEmpty(rawInput))
+                {
+                    ScheduleDisplayUpdate(rawInput);
                 }
+                _readTimer.Enabled = true;
             }
         }
 
         #region mudOutput Updating
-        private void ScheduleDisplayUpdate(List<string> rawInput)
+        private void ScheduleDisplayUpdate(string rawInput)
         {
-            List<FormattedText> formattedBuffer = new();
-
-            foreach (FormattedText ft in ParseBuffer(rawInput))
-                formattedBuffer.Add(ft);
+            List<FormattedText> formattedBuffer = ParseBuffer(rawInput);
 
             //Use Dispatcher to safely update UI elements
             Dispatcher.BeginInvoke(
@@ -312,7 +299,7 @@ namespace Yam
                     {
                         linktext = linktext.TrimEnd(new char[] { '\n', '\r' } );
                     }
-                    Hyperlink hlk = new Hyperlink(new Run(linktext));
+                    Hyperlink hlk = new(new Run(linktext));
                     try
                     {
                         //Remove any extra quote marks from around the URL
@@ -363,16 +350,18 @@ namespace Yam
         /// <summary>
         /// Apply a variety of rules to the text received from the connected world
         /// </summary>
-        /// <param name="fromBuffer"></param>
+        /// <param name="buffer"></param>
         /// <returns></returns>
-        private List<FormattedText> ParseBuffer(List<string> fromBuffer)
+        private List<FormattedText> ParseBuffer(string rawInput)
         {
+            string[] lines = rawInput.Split('\n');
+
             List<FormattedText> formattedBuffer = new();
 
             string channelPattern = @"^(\[.*?\])";     // Find [channel] names
-            string connectPattern = @"^(<.+>)"; // Find <connect> messages
+            string connectPattern = @"^(<.+>)";         // Find <connect> messages
 
-            foreach (string line in fromBuffer)
+            foreach (string line in lines)
             {
                 string buffer = string.Empty;
                 Brush channelColor = Brushes.AliceBlue; //Text color
@@ -384,10 +373,10 @@ namespace Yam
                 {
                     #region Channel name coloring
                     //Detect a channel name with 'pattern' and color             
-                    Regex channelRgx = new Regex(channelPattern, RegexOptions.IgnoreCase);
+                    Regex channelRgx = new(channelPattern, RegexOptions.IgnoreCase);
                     Match channelMatch = channelRgx.Match(words[i]);
 
-                    Regex connectRgx = new Regex(connectPattern, RegexOptions.IgnoreCase);
+                    Regex connectRgx = new(connectPattern, RegexOptions.IgnoreCase);
                     Match connectMatch = connectRgx.Match(words[i]);
 
                     if (channelMatch.Success)
@@ -544,7 +533,7 @@ namespace Yam
         }
         #endregion
         #region Networking
-        private void ConnectToWorld(WorldInfo world)
+        private async void ConnectToWorld(WorldInfo world)
         {
             if (!currentWorld.IsConnected)
             {
@@ -575,10 +564,13 @@ namespace Yam
                     {
                         string loginString = "connect " + world.Username + " " +
                             Encoding.UTF8.GetString(world.ProtectedPassword) + "\n";                       
-                        currentWorld.WriteAsync(loginString);
+                        await currentWorld.WriteAsync(loginString).ConfigureAwait(false);
                     }
-                    ReconnectWorldMenuItem.IsEnabled = true;
-                    DisconnectWorldMenuItem.IsEnabled = true;
+                    Dispatcher.Invoke(() =>
+                    {
+                        ReconnectWorldMenuItem.IsEnabled = true;
+                        DisconnectWorldMenuItem.IsEnabled = true;
+                    });
                     //Enable timer that reads from world
                     _readTimer.Enabled = true;
                 }
@@ -724,24 +716,8 @@ namespace Yam
         {
             //Test to see if config directory exists and create if not
             if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")))
-            {
-                MessageBox.Show($"Creating dir {Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments))}", "Yam");
-                try
-                {
-                    Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));
-                }
-                catch (UnauthorizedAccessException e)
-                {
-                    MessageBox.Show($"{e.Message}");
-                }
-                catch (IOException e)
-                {
-                    MessageBox.Show($"{e.Message}");
-                }
-                finally
-                {
-                    MessageBox.Show("Created dir!");
-                }
+            {                
+                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));                
             }
             WorldCollection tempwc = new();
             ///If there's already saved worlds, load them
@@ -774,12 +750,19 @@ namespace Yam
         public static WorldCollection ReadConfig()
         {
             WorldCollection data = new();
-       
+
+            //Test to see if config directory exists and create if not
+            if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")))
+            {
+                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));
+            }
+
             try
             {
                 using Stream stream = new FileStream(ConfigFile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
                 IFormatter formatter = new BinaryFormatter();
-                data = (WorldCollection)formatter.Deserialize(stream);
+                if(stream.Length != 0)
+                    data = (WorldCollection)formatter.Deserialize(stream);
             }
             catch (FileNotFoundException)
             {
@@ -789,6 +772,7 @@ namespace Yam
             {
                 MessageBox.Show("Config file directory not found");
             }
+
             return data;
         }
         #endregion

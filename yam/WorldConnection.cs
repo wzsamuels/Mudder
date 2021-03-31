@@ -44,17 +44,9 @@ namespace Yam
                     new AsyncCallback(ConnectCallback), client);
                 connectDone.WaitOne();
             }
-            catch (SocketException e)
+            catch(Exception)
             {
-                MessageBox.Show($"{e.Message}");
-            }
-            catch (ObjectDisposedException e)
-            {
-                MessageBox.Show($"{e.Message}");
-            }
-            catch (ArgumentNullException e)
-            {
-                MessageBox.Show($"{e.Message}");
+                throw;
             }
 
             return client.Connected;
