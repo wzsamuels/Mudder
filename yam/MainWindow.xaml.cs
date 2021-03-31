@@ -35,6 +35,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Globalization;
 
 namespace Yam
 {
@@ -695,8 +696,8 @@ namespace Yam
             TypeConverter converter =
                 TypeDescriptor.GetConverter(typeof(System.Drawing.Font));
 
-            string tmpstring = string.Format("{0}, {1}", mudOutputText.Document.FontFamily.ToString().Split(',')[0],
-                mudOutputText.Document.FontSize.ToString());
+            string tmpstring = string.Format(CultureInfo.CurrentCulture,"{0}, {1}", mudOutputText.Document.FontFamily.ToString().Split(',')[0],
+                mudOutputText.Document.FontSize.ToString(CultureInfo.CurrentCulture));
 
             System.Drawing.Font font1 = (System.Drawing.Font)converter.ConvertFromString(tmpstring);
             fd.Font = font1;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -82,7 +83,7 @@ namespace Yam
             {
                 try
                 {
-                    WorldInfo.WorldPort = Convert.ToInt32(worldPortText.Text.Trim());
+                    WorldInfo.WorldPort = Convert.ToInt32(worldPortText.Text.Trim(), NumberFormatInfo.CurrentInfo);
                 }
                 catch (FormatException)
                 {
