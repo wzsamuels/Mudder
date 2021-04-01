@@ -24,7 +24,7 @@ namespace Yam
     public class WorldInfo
     {
         public string WorldName { get; set; } = string.Empty;
-        public string WorldURL { get; set; } = string.Empty;
+        public Uri WorldURL { get; set; } = new Uri("about:blank");
         public int WorldPort { get; set; } = 0;
         public string Username { get; set; } = string.Empty;
         public bool AutoLogin { get; set; } = false;
@@ -38,19 +38,19 @@ namespace Yam
                 rng.GetBytes(entropy);
             }*/
         }
-        public byte[] ProtectedPassword
-        {
-            get
-            {
-                if (protectedPassword != null)
-                {
-                    return (byte[])ProtectedData.Unprotect(protectedPassword, entropy, DataProtectionScope.CurrentUser).Clone();
-                }
-                return (byte[])protectedPassword.Clone();
-            }
 
-            set => protectedPassword =
-                            ProtectedData.Protect(value, entropy, DataProtectionScope.CurrentUser);
+        public byte[] GetProtectedPassword()
+        {
+            if (protectedPassword != null)
+            {
+                return (byte[])ProtectedData.Unprotect(protectedPassword, entropy, DataProtectionScope.CurrentUser).Clone();
+            }
+            //return (byte[])protectedPassword.Clone();
+            return null;
+        }
+        public void SetProtectedPassword(byte[] value)
+        {
+            protectedPassword = ProtectedData.Protect(value, entropy, DataProtectionScope.CurrentUser);
         }
     }
 }

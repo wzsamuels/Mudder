@@ -72,7 +72,7 @@ namespace Yam
 
             if (worldURLTemp.Length > 0)
             {
-                WorldInfo.WorldURL = worldURLTemp;
+                WorldInfo.WorldURL = new UriBuilder(worldURLTemp).Uri;
             }
             else
             {
@@ -111,7 +111,7 @@ namespace Yam
                     WorldInfo.Username = usernameText.Text.Trim();
                     string tempPass = passwordText.Text.Trim();
                     byte[] bytePass = Encoding.UTF8.GetBytes(tempPass);
-                    WorldInfo.ProtectedPassword = bytePass;
+                    WorldInfo.SetProtectedPassword(bytePass);
                 }
 
                 DialogResult = true;

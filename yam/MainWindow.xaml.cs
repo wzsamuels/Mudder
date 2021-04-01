@@ -549,7 +549,7 @@ namespace Yam
                     if (world.AutoLogin)
                     {
                         string loginString = "connect " + world.Username + " " +
-                            Encoding.UTF8.GetString(world.ProtectedPassword) + "\n";
+                            Encoding.UTF8.GetString(world.GetProtectedPassword()) + "\n";
                         await currentWorld.WriteAsync(loginString).ConfigureAwait(false);
                     }
 
@@ -561,7 +561,7 @@ namespace Yam
                         Title = "YAM - " + world.WorldName;
 
                         //Display the world URL and IP in the status bar
-                        IPHostEntry Host = Dns.GetHostEntry(world.WorldURL);
+                        IPHostEntry Host = Dns.GetHostEntry(world.WorldURL.DnsSafeHost);
                         string ipAddress = String.Empty;
                         for (int i = 0; i < Host.AddressList.Length; i++)
                         {
@@ -641,21 +641,17 @@ namespace Yam
 
             if (result == true)
             {
-                string path = window.worldList.SelectedValue.ToString();
-                string[] temparray = path.Split(' ');
+                string name = window.worldList.SelectedValue.ToString().Split(' ')[1];
 
                 foreach (WorldInfo world in ReadConfig().Worlds)
                 {
-                    if (temparray[1] == world.WorldName)
+                    if (name == world.WorldName)
                     {
-                        if (world.ProtectedPassword == null)
-                        {
-                            MessageBox.Show("Error!");
-                            world.ProtectedPassword = Encoding.UTF8.GetBytes("");
-                        }
                         currentWorldInfo = world;
+                        break;
                     }
                 }
+
                 ConnectToWorld(currentWorldInfo);
             }
         }

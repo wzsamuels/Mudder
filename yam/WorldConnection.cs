@@ -35,9 +35,9 @@ namespace Yam
 
         bool disposed = false;
 
-        public async Task ConnectAsync(string host, int port)
+        public async Task ConnectAsync(Uri host, int port)
         {
-            await client.ConnectAsync(host, port).ConfigureAwait(false);
+            await client.ConnectAsync(host.DnsSafeHost, port).ConfigureAwait(false);
         }
 
         public bool ConnectWorld(string worldName, int Port)
