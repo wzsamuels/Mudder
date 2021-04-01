@@ -33,11 +33,10 @@ namespace Yam
         {
             InitializeComponent();
 
-
-
             ObservableCollection<ListBoxItem> listItems = new();
 
             var loadedWorlds = MainWindow.ReadConfig().Worlds;
+
             if (loadedWorlds != null)
             {
                 foreach (WorldInfo world in MainWindow.ReadConfig().Worlds)
