@@ -9,16 +9,16 @@ namespace Yam
      [Serializable]
     public class WorldCollection
     {
-        public WorldCollection()
-        {
-            Worlds = new List<WorldInfo>();
-        }
-
-        public List<WorldInfo> Worlds { get; }
+        public List<WorldInfo> WorldList { get; } = new();
 
         public void AddWorld(WorldInfo world)
         {
-            Worlds.Add(world);
+            WorldList.Add(world);
+        }
+
+        public WorldInfo GetWorld(string name)
+        {
+            return WorldList.Find(world => world.WorldName == name);
         }
     }
 

@@ -19,6 +19,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Collections.ObjectModel;
+using System.Windows.Media;
 
 namespace Yam
 {
@@ -28,18 +29,25 @@ namespace Yam
     public partial class OpenWorldWindow : Window
     {
         public WorldInfo UI { get; set; } = new WorldInfo();
+        private WorldCollection worlds = new();
 
         public OpenWorldWindow()
         {
             InitializeComponent();
 
+            //Set up UI defaults
+            usernameTextBox.IsEnabled = false;
+            passwordTextBox.IsEnabled = false;
+            usernameTextBlock.Foreground = Brushes.Gray;
+            passwordTextBlock.Foreground = Brushes.Gray;
+
             ObservableCollection<ListBoxItem> listItems = new();
 
-            var loadedWorlds = MainWindow.ReadConfig().Worlds;
+            worlds = MainWindow.ReadConfig();
 
-            if (loadedWorlds != null)
+            if (worlds != null && worlds.WorldList != null)
             {
-                foreach (WorldInfo world in MainWindow.ReadConfig().Worlds)
+                foreach (WorldInfo world in worlds.WorldList)
                 {
                     ListBoxItem worldItem = new()
                     {
@@ -62,7 +70,7 @@ namespace Yam
                 return (UI);
             }
         }
-        private void OkNewWorldButton_Click(object sender, EventArgs e)
+        private void OkOpenWorldButton_Click(object sender, EventArgs e)
         {
             if (worldList.SelectedValue != null)
             {
@@ -74,7 +82,7 @@ namespace Yam
                 Close();
             }            
         }
-        private void CancelNewWorldButton_Click(object sender, EventArgs e)
+        private void CancelOpenWorldButton_Click(object sender, EventArgs e)
         {
             DialogResult = false;
             Close();
@@ -85,6 +93,47 @@ namespace Yam
            
             DialogResult = true;
             Close();
+        }
+
+        private void WorldList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            WorldInfo selectedWorld = worlds.GetWorld(worldList.SelectedItem.ToString().Split(' ')[1]);
+
+            if (selectedWorld != null)
+            {
+                nameTextBox.Text = selectedWorld.WorldName;
+                urlTextBox.Text = selectedWorld.WorldURL.ToString();
+                portTextBox.Text = selectedWorld.WorldPort.ToString();
+                if (selectedWorld.AutoLogin)
+                {
+                    loginCheck.IsChecked = true;
+                    usernameTextBox.Text = selectedWorld.Username;
+                    passwordTextBox.Password = selectedWorld.GetProtectedPassword().ToString();
+                }
+            }
+        }
+
+        private void LoginCheck_Checked(object sender, RoutedEventArgs e)
+        {
+            usernameTextBox.IsEnabled = true;
+            passwordTextBox.IsEnabled = true;
+
+            usernameTextBlock.Foreground = Brushes.Black;
+            passwordTextBlock.Foreground = Brushes.Black;
+        }
+
+        private void LoginCheck_Unchecked(object sender, RoutedEventArgs e)
+        {
+            usernameTextBox.IsEnabled = false;
+            passwordTextBox.IsEnabled = false;
+
+            usernameTextBlock.Foreground = Brushes.Gray;
+            passwordTextBlock.Foreground = Brushes.Gray;
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 

@@ -584,7 +584,7 @@ namespace Yam
                 {
                     Dispatcher.Invoke(() => 
                     { 
-                        mudOutputText.AppendText($"\nError connecting to {world.WorldName} at {world.WorldURL} at port {world.WorldPort}", Brushes.Gold);
+                        mudOutputText.AppendText($"\nError connecting to {world.WorldName} at {world.WorldURL} at port {world.WorldPort}.", Brushes.Gold);
                     });
                 }
                 catch(Exception)
@@ -643,7 +643,7 @@ namespace Yam
             {
                 string name = window.worldList.SelectedValue.ToString().Split(' ')[1];
 
-                foreach (WorldInfo world in ReadConfig().Worlds)
+                foreach (WorldInfo world in ReadConfig().WorldList)
                 {
                     if (name == world.WorldName)
                     {
@@ -694,7 +694,7 @@ namespace Yam
 
             string tmpstring = string.Format(CultureInfo.CurrentCulture,"{0}, {1}", mudOutputText.Document.FontFamily.ToString().Split(',')[0],
                 mudOutputText.Document.FontSize.ToString(CultureInfo.CurrentCulture));
-
+            
             System.Drawing.Font font1 = (System.Drawing.Font)converter.ConvertFromString(tmpstring);
             fd.Font = font1;
 
@@ -709,6 +709,12 @@ namespace Yam
                 defaultColor =
                     new SolidColorBrush(Color.FromArgb(fd.Color.A, fd.Color.R, fd.Color.G, fd.Color.B));
             }
+
+            Block[] array = new Block[mudOutputText.Document.Blocks.Count];
+            mudOutputText.Document.Blocks.CopyTo(array, 0);
+            mudOutputText.Document.Blocks.Clear();
+            mudOutputText.Document.Blocks.AddRange(array);
+            
         }
         //Clear the output window
         private void ClearMenuItem_Click(object sender, RoutedEventArgs e)
