@@ -31,9 +31,6 @@ using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Timers;
 using System.Windows.Threading;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Globalization;
 
@@ -45,12 +42,12 @@ namespace Yam
     public partial class MainWindow : Window, INotifyPropertyChanged, IDisposable
     {
         #region Private variables
-        private WorldConnection currentWorld = new();
-        private WorldInfo currentWorldInfo = new();
+        private WorldConnection _currentWorldConnection = new();
+        private WorldInfo _currentWorldInfo = new();
         private bool disposed = false;
 
-        private static readonly string ConfigFile
-            = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam", "world.bin");
+        public static string ConfigFilePath;
+
         //Timer to read from open world
         private readonly Timer _readTimer;
 
@@ -132,6 +129,24 @@ namespace Yam
 
         public MainWindow()
         {
+            // Create the default 
+            string directoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam");
+
+            if (!Directory.Exists(directoryPath))
+            {
+                try
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+                catch(IOException e)            
+                {
+                    _ = MessageBox.Show(this, $"{e}", "Error Creating Directory",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+
+            ConfigFilePath = Path.Combine(directoryPath, "world.bin");
+
             InitializeComponent();
 
             Title = "YAM";
@@ -163,7 +178,7 @@ namespace Yam
             if (disposing)
             {
                 _readTimer.Dispose();
-                currentWorld.Dispose();
+                _currentWorldConnection.Dispose();
             }
             disposed = true;
         }
@@ -186,9 +201,9 @@ namespace Yam
             if (e.Key == Key.Return)
             {
                 string prompt = userInputText.Text;
-                if (currentWorld.IsConnected)
+                if (_currentWorldConnection.IsConnected)
                 {
-                    await currentWorld.WriteAsync(prompt).ConfigureAwait(false);
+                    await _currentWorldConnection.WriteAsync(prompt).ConfigureAwait(false);
                     commandHistory.Add(prompt);
                     commandIndex = commandHistory.Count - 1;
                     Dispatcher.Invoke(() =>
@@ -253,10 +268,10 @@ namespace Yam
         /// <param name="e"></param>
         private async void OnTimedEventAsync(object source, ElapsedEventArgs e)
         {                  
-            if (currentWorld.IsConnected)
+            if (_currentWorldConnection.IsConnected)
             {
                 _readTimer.Enabled = false;
-                string rawInput = await currentWorld.ReadyAsync().ConfigureAwait(false);
+                string rawInput = await _currentWorldConnection.ReadyAsync().ConfigureAwait(false);
 
                 if (!String.IsNullOrEmpty(rawInput))
                 {
@@ -465,7 +480,7 @@ namespace Yam
                             AddDefaultFormattedText(formattedBuffer, " ");
                         }
                     }
-                    else if (words[i] == currentWorldInfo.Username || words[i] == "You")
+                    else if (words[i] == _currentWorldInfo.Username || words[i] == "You")
                     {
                         // Flush buffer
                         AddDefaultFormattedText(formattedBuffer, buffer);
@@ -537,20 +552,20 @@ namespace Yam
         #region Networking
         private async void ConnectToWorld(WorldInfo world)
         {
-            if (!currentWorld.IsConnected)
+            if (!_currentWorldConnection.IsConnected)
             {
-                currentWorld = new WorldConnection();
+                _currentWorldConnection = new WorldConnection();
                 mudOutputText.AppendText($"\nConnecting to {world.WorldName} at {world.WorldURL} at port {world.WorldPort}...", Brushes.Gold);
 
                 try
                 {
-                    await currentWorld.ConnectAsync(world.WorldURL, world.WorldPort).ConfigureAwait(false);
+                    await _currentWorldConnection.ConnectAsync(world.WorldURL, world.WorldPort).ConfigureAwait(false);
 
                     if (world.AutoLogin)
                     {
                         string loginString = "connect " + world.Username + " " +
                             Encoding.UTF8.GetString(world.GetProtectedPassword()) + "\n";
-                        await currentWorld.WriteAsync(loginString).ConfigureAwait(false);
+                        await _currentWorldConnection.WriteAsync(loginString).ConfigureAwait(false);
                     }
 
                     // Update UI elements
@@ -599,7 +614,7 @@ namespace Yam
         private void DisconnectFromWorld()
         {
             mudOutputText.AppendText($"\nDisconecting from {_worldNameText}...", Brushes.Gold);
-            if (currentWorld.Disconnect())
+            if (_currentWorldConnection.Disconnect())
             {
                 mudOutputText.AppendText("\nDisconnected.", Brushes.Gold);
             }
@@ -621,12 +636,12 @@ namespace Yam
            
             if (result == true)
             {              
-                currentWorldInfo = window.WorldInfo;
+                _currentWorldInfo = window.WorldInfo;
                 if (window.SaveLogin)
                 {
-                    WriteConfig(currentWorldInfo);
+                    WorldFile.Write(_currentWorldInfo, ConfigFilePath);
                 }
-                ConnectToWorld(currentWorldInfo);
+                ConnectToWorld(_currentWorldInfo);
             }
         }
         private void OpenCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -643,27 +658,27 @@ namespace Yam
             {
                 string name = window.worldList.SelectedValue.ToString().Split(' ')[1];
 
-                foreach (WorldInfo world in ReadConfig().WorldList)
+                foreach (WorldInfo world in WorldFile.Read(ConfigFilePath).WorldList)
                 {
                     if (name == world.WorldName)
                     {
-                        currentWorldInfo = world;
+                        _currentWorldInfo = world;
                         break;
                     }
                 }
 
-                ConnectToWorld(currentWorldInfo);
+                ConnectToWorld(_currentWorldInfo);
             }
         }
 
         private void SaveCommandBinding_Executed(object sender, RoutedEventArgs e)
         {
-            WriteConfig(currentWorldInfo);
+            WorldFile.Write(_currentWorldInfo, ConfigFilePath);
         }
         private void ReconnectMenuItem_Click(object sender, RoutedEventArgs e)
         {
             DisconnectFromWorld();
-            ConnectToWorld(currentWorldInfo);          
+            ConnectToWorld(_currentWorldInfo);          
         }
         private void DisconnectMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -686,107 +701,52 @@ namespace Yam
         }
         #endregion       
         #region Edit Menu Click Code
-        private void PrefMenuItem_Click(object sender, RoutedEventArgs e)
+
+        private void ToolsMenuFontItem_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.FontDialog fd = new();
             TypeConverter converter =
                 TypeDescriptor.GetConverter(typeof(System.Drawing.Font));
 
-            string tmpstring = string.Format(CultureInfo.CurrentCulture,"{0}, {1}", mudOutputText.Document.FontFamily.ToString().Split(',')[0],
+            string tmpstring = string.Format(CultureInfo.CurrentCulture, "{0}, {1}", mudOutputText.Document.FontFamily.ToString().Split(',')[0],
                 mudOutputText.Document.FontSize.ToString(CultureInfo.CurrentCulture));
-            
+
             System.Drawing.Font font1 = (System.Drawing.Font)converter.ConvertFromString(tmpstring);
             fd.Font = font1;
 
-            fd.ShowColor = true; //Enable choosing text color
             var result = fd.ShowDialog();
+            //mudOutputText.SelectAll();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 mudOutputText.Document.FontFamily = new FontFamily(fd.Font.Name);
                 mudOutputText.Document.FontSize = fd.Font.Size;// * 96.0 / 72.0;
                 mudOutputText.Document.FontWeight = fd.Font.Bold ? FontWeights.Bold : FontWeights.Regular;
                 mudOutputText.Document.FontStyle = fd.Font.Italic ? FontStyles.Italic : FontStyles.Normal;
-                defaultColor =
-                    new SolidColorBrush(Color.FromArgb(fd.Color.A, fd.Color.R, fd.Color.G, fd.Color.B));
-            }
-
-            Block[] array = new Block[mudOutputText.Document.Blocks.Count];
-            mudOutputText.Document.Blocks.CopyTo(array, 0);
-            mudOutputText.Document.Blocks.Clear();
-            mudOutputText.Document.Blocks.AddRange(array);
-            
+            }           
         }
+
+        private void ToolsMenuColorItem_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.ColorDialog cd = new();
+            var result = cd.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                defaultColor = new SolidColorBrush(Color.FromArgb(cd.Color.A, cd.Color.R, cd.Color.G, cd.Color.B));
+                mudOutputText.Document.Foreground = default;
+            }
+        }
+
         //Clear the output window
         private void ClearMenuItem_Click(object sender, RoutedEventArgs e)
         {
             mudOutputText.Document.Blocks.Clear();
         }
-        #endregion
-        #endregion
-        #region Config File Handling
-        public static void WriteConfig(WorldInfo data)
+
+        private void PrefMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            //Test to see if config directory exists and create if not
-            if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")))
-            {                
-                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));                
-            }
-            WorldCollection tempwc = new();
-            ///If there's already saved worlds, load them
-            if (File.Exists(ConfigFile))
-            {
-                tempwc = ReadConfig();
-            }
-           
-            IFormatter formatter = new BinaryFormatter();
-            try
-            {
-                tempwc.AddWorld(data); //Add world to list (not overwriting)
-                Stream stream = new FileStream(ConfigFile, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
-                formatter.Serialize(stream, tempwc);
-            }
 
-            catch (FileNotFoundException)
-            {
-                MessageBox.Show("Config file not found");
-            }
-            catch (IOException)
-            {
-                MessageBox.Show("An I/O error has occurred.");
-            }
-            catch (OutOfMemoryException)
-            {
-                MessageBox.Show("There is insufficient memory to read the file.");
-            }
         }
-        public static WorldCollection ReadConfig()
-        {
-            WorldCollection data = new();
-
-            //Test to see if config directory exists and create if not
-            if (!Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam")))
-            {
-                Directory.CreateDirectory(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Yam"));
-            }
-
-            try
-            {
-                using Stream stream = new FileStream(ConfigFile, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
-                IFormatter formatter = new BinaryFormatter();
-                if(stream.Length != 0)
-                    data = (WorldCollection)formatter.Deserialize(stream);
-            }
-            catch (FileNotFoundException)
-            {
-                MessageBox.Show("Config file not found");
-            }
-            catch (DirectoryNotFoundException)
-            {
-                MessageBox.Show("Config file directory not found");
-            }
-
-            return data;
-        }
-        #endregion
     }
+    #endregion
+    #endregion
 }

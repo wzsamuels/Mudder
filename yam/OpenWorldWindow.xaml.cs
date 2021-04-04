@@ -43,7 +43,7 @@ namespace Yam
 
             ObservableCollection<ListBoxItem> listItems = new();
 
-            worlds = MainWindow.ReadConfig();
+            worlds = WorldFile.Read(MainWindow.ConfigFilePath);
 
             if (worlds != null && worlds.WorldList != null)
             {

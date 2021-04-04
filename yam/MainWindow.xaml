@@ -62,7 +62,9 @@
                 <MenuItem Header="Clear" HorizontalAlignment="Left" Click="ClearMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <MenuItem Header="_Preferences" Click="PrefMenuItem_Click"/>
+                <MenuItem Header="Change Font" Click="ToolsMenuFontItem_Click"/>
+                <MenuItem Header="Change Text Color" Click="ToolsMenuColorItem_Click"/>
+                <MenuItem Header="Preferences" Command="Properties" Click="PrefMenuItem_Click"/>
             </MenuItem>
             <!--
             <MenuItem Header="_View" />
