@@ -91,10 +91,9 @@
             </FlowDocument>
         </RichTextBox>
 
-
         <TextBox x:Name="userInputText" HorizontalAlignment="Stretch" FontSize="13" TextWrapping="Wrap"
                      Height="40" Grid.Row="2" VerticalAlignment="Bottom" Width="Auto"                      
-                     PreviewKeyDown="UserInputText_PreviewKeyDown" SpellCheck.IsEnabled="True" FontFamily="DejaVu Sans Mono"/>
+                     PreviewKeyDown="UserInputText_PreviewKeyDown" SpellCheck.IsEnabled="True" FontFamily="DejaVu Sans Mono, Courier New"/>
         <StatusBar HorizontalAlignment="Stretch" Height="Auto" Grid.Row="3" 
                    VerticalAlignment="Bottom" Width="Auto">
             <StatusBarItem HorizontalAlignment="Left">
