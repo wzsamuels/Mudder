@@ -123,6 +123,9 @@
     <Compile Include="About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OptionsWindow.xaml.cs">
+      <DependentUpon>OptionsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="WorldFile.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -134,9 +137,6 @@
     </Compile>
     <Compile Include="NewWorldWindow.xaml.cs">
       <DependentUpon>NewWorldWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="PreferencesWindow.xaml.cs">
-      <DependentUpon>PreferencesWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="RichTextBoxExtensions.cs" />
     <Compile Include="WorldCollection.cs" />
@@ -162,7 +162,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="PreferencesWindow.xaml">
+    <Page Include="OptionsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

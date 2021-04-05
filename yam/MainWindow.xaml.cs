@@ -704,35 +704,65 @@ namespace Yam
 
         private void ToolsMenuFontItem_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FontDialog fd = new();
+            System.Windows.Forms.FontDialog fontDialog = new();
+                   
             TypeConverter converter =
                 TypeDescriptor.GetConverter(typeof(System.Drawing.Font));
-
             string tmpstring = string.Format(CultureInfo.CurrentCulture, "{0}, {1}", mudOutputText.Document.FontFamily.ToString().Split(',')[0],
                 mudOutputText.Document.FontSize.ToString(CultureInfo.CurrentCulture));
-
             System.Drawing.Font font1 = (System.Drawing.Font)converter.ConvertFromString(tmpstring);
-            fd.Font = font1;
+            fontDialog.Font = font1;
 
-            var result = fd.ShowDialog();
-            //mudOutputText.SelectAll();
+            fontDialog.ShowApply = true;
+            fontDialog.Apply += new EventHandler((s, e) => FontDialog_Apply(fontDialog));
+
+            // Save the old font settings
+            FontFamily oldFamily = mudOutputText.Document.FontFamily;
+            double oldSize = mudOutputText.Document.FontSize;
+            FontWeight oldWeight = mudOutputText.Document.FontWeight;
+            FontStyle oldStyle = mudOutputText.Document.FontStyle;
+
+            var result = fontDialog.ShowDialog();
+
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                mudOutputText.Document.FontFamily = new FontFamily(fd.Font.Name);
-                mudOutputText.Document.FontSize = fd.Font.Size;// * 96.0 / 72.0;
-                mudOutputText.Document.FontWeight = fd.Font.Bold ? FontWeights.Bold : FontWeights.Regular;
-                mudOutputText.Document.FontStyle = fd.Font.Italic ? FontStyles.Italic : FontStyles.Normal;
+                FontDialog_Apply(fontDialog);
             }           
+            else if (result == System.Windows.Forms.DialogResult.Cancel)
+            {
+                mudOutputText.Document.FontFamily = oldFamily;
+                mudOutputText.Document.FontSize = oldSize;
+                mudOutputText.Document.FontWeight = oldWeight;
+                mudOutputText.Document.FontStyle = oldStyle;
+            }
+        }
+
+        private void FontDialog_Apply(System.Windows.Forms.FontDialog fontDialog)
+        {
+            mudOutputText.Document.FontFamily = new FontFamily(fontDialog.Font.Name);
+            mudOutputText.Document.FontSize = fontDialog.Font.Size;// * 96.0 / 72.0;
+            mudOutputText.Document.FontWeight = fontDialog.Font.Bold ? FontWeights.Bold : FontWeights.Regular;
+            mudOutputText.Document.FontStyle = fontDialog.Font.Italic ? FontStyles.Italic : FontStyles.Normal;
+
+            // Apply the new font size to existing text
+            mudOutputText.SelectAll();
+            mudOutputText.Selection.ApplyPropertyValue(FontSizeProperty, mudOutputText.Document.FontSize);
         }
 
         private void ToolsMenuColorItem_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Forms.ColorDialog cd = new();
             var result = cd.ShowDialog();
+            
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                defaultColor = new SolidColorBrush(Color.FromArgb(cd.Color.A, cd.Color.R, cd.Color.G, cd.Color.B));
-                mudOutputText.Document.Foreground = default;
+                // Convert selected color to Brush and save as the new default colorl
+                defaultColor = new SolidColorBrush(Color.FromArgb(cd.Color.A, cd.Color.R, cd.Color.G, cd.Color.B));                
+                mudOutputText.Document.Foreground = defaultColor;
+
+                // Apply new color to existing text
+                mudOutputText.SelectAll();
+                mudOutputText.Selection.ApplyPropertyValue(TextElement.ForegroundProperty, defaultColor);
             }
         }
 
@@ -742,9 +772,10 @@ namespace Yam
             mudOutputText.Document.Blocks.Clear();
         }
 
-        private void PrefMenuItem_Click(object sender, RoutedEventArgs e)
+        private void ToolsMenuOptionsItem_Click(object sender, RoutedEventArgs e)
         {
-
+            var window = new OptionsWindow() { Owner = this };
+            var result = window.ShowDialog();
         }
     }
     #endregion
