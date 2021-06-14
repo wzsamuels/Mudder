@@ -62,59 +62,33 @@
                 <MenuItem Header="Clear" HorizontalAlignment="Left" Click="ClearMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <MenuItem Header="_Preferences" Click="PrefMenuItem_Click"/>
+                <MenuItem Header="Change Font" Click="ToolsMenuFontItem_Click"/>
+                <MenuItem Header="Change Text Color" Click="ToolsMenuColorItem_Click"/>
+                <MenuItem Header="Options" Click="ToolsMenuOptionsItem_Click"/>
             </MenuItem>
-            <!--
-            <MenuItem Header="_View" />
-            <MenuItem Header="_Window" />
-             -->
-                <MenuItem Header="_Help">
+            <MenuItem Header="_Help">
                 <MenuItem Header="About" Click="AboutMenuItem_Click"/>
             </MenuItem>
             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}"></Separator >
                 
         </Menu>
 
-        <TabControl x:Name="tabControl" Grid.Row="1" >
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding WorldNameText}"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <Grid Margin="0,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="100*"/>
-                    </Grid.RowDefinitions>
-                    <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
+        <RichTextBox x:Name="mudOutputText" HorizontalAlignment="stretch" Height="Auto" VerticalAlignment="Stretch" Width="Auto"
                            ScrollViewer.VerticalScrollBarVisibility="Auto" IsDocumentEnabled="True" IsReadOnly="True"
                         FontSize="16" Background="Black" Foreground="#BEBEBE" TextChanged="MudOutputText_TextChanged"
-                        FontFamily = "DejaVu Sans Mono, Courier New">
-                            <RichTextBox.Resources>
-                                <Style TargetType="{x:Type Paragraph}">
-                                    <Setter Property="Margin" Value="0"/>
-                                </Style>
-                            </RichTextBox.Resources>
-                        <FlowDocument FontSize="16" LineHeight="20">
-                        </FlowDocument>
-                        </RichTextBox>
-
-                </Grid>
-            </TabItem>
-            
-            <TabItem Header="Not Useful">
-                <TextBox>Nothing here right now</TextBox>
-            </TabItem>
-            
-        </TabControl>
-
+                        FontFamily = "DejaVu Sans Mono, Courier New" Grid.Row="1" RenderTransformOrigin="0.5,0.5">
+            <RichTextBox.Resources>
+                <Style TargetType="{x:Type Paragraph}">
+                    <Setter Property="Margin" Value="0"/>
+                </Style>
+            </RichTextBox.Resources>
+            <FlowDocument FontSize="16" LineHeight="20">
+            </FlowDocument>
+        </RichTextBox>
 
         <TextBox x:Name="userInputText" HorizontalAlignment="Stretch" FontSize="13" TextWrapping="Wrap"
                      Height="40" Grid.Row="2" VerticalAlignment="Bottom" Width="Auto"                      
-                     PreviewKeyDown="UserInputText_PreviewKeyDown" SpellCheck.IsEnabled="True" FontFamily="DejaVu Sans Mono"/>
+                     PreviewKeyDown="UserInputText_PreviewKeyDown" SpellCheck.IsEnabled="True" FontFamily="DejaVu Sans Mono, Courier New"/>
         <StatusBar HorizontalAlignment="Stretch" Height="Auto" Grid.Row="3" 
                    VerticalAlignment="Bottom" Width="Auto">
             <StatusBarItem HorizontalAlignment="Left">

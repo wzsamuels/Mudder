@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Yam"
         mc:Ignorable="d"
+        ResizeMode="CanResizeWithGrip"
         Title="NewWorldWindow" Height="399.8" Width="467.4" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
     <Grid Margin="10">
         <Grid>
@@ -55,7 +56,6 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Margin="10,0,0,10" Text="Automatically log in" Grid.ColumnSpan="2" />
@@ -71,11 +71,9 @@
                     Height="Auto" Margin="10,10,10,10" TextWrapping="Wrap" VerticalAlignment="Center" Width="120"/>
                 </Grid>
             </CheckBox>
-            <CheckBox x:Name="passwordCheck" Grid.Row="5" Margin="10,10,10,10" Grid.ColumnSpan="2"
-                  Checked="SaveLoginCheck_Checked"
-	               Unchecked="SaveLoginCheck_Unchecked">
+            <CheckBox x:Name="passwordCheck" Grid.Row="5" Margin="10,10,10,10" Grid.ColumnSpan="2">
                 <TextBlock Margin="10,0,10,10" 
-                           Text="Save World (note: password is saved as plain text)" 
+                           Text="Save World" 
                            TextWrapping="Wrap"/>
             </CheckBox>
             <Separator Grid.Row="6" Grid.ColumnSpan="2" ></Separator>

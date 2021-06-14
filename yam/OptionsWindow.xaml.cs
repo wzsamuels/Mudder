@@ -15,14 +15,25 @@ using System.Windows.Shapes;
 namespace Yam
 {
     /// <summary>
-    /// Interaction logic for PreferencesWindow.xaml
+    /// Interaction logic for Window1.xaml
     /// </summary>
-    public partial class PreferencesWindow : Window
+    public partial class OptionsWindow : Window
     {
-
-        public PreferencesWindow()
+        public OptionsWindow()
         {
             InitializeComponent();
+        }
+
+        private void OkButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = true;
+            Close();
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            DialogResult = false;
+            Close();
         }
     }
 }

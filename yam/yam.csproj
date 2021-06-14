@@ -41,7 +41,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -51,16 +51,18 @@
     <DocumentationFile>
     </DocumentationFile>
     <LangVersion>preview</LangVersion>
+    <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>preview</LangVersion>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>C46C8C004EEAAF4FED66FDEA183075495AF3D907</ManifestCertificateThumbprint>
@@ -121,6 +123,10 @@
     <Compile Include="About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OptionsWindow.xaml.cs">
+      <DependentUpon>OptionsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WorldFile.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <SubType>Code</SubType>
@@ -131,9 +137,6 @@
     </Compile>
     <Compile Include="NewWorldWindow.xaml.cs">
       <DependentUpon>NewWorldWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="PreferencesWindow.xaml.cs">
-      <DependentUpon>PreferencesWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="RichTextBoxExtensions.cs" />
     <Compile Include="WorldCollection.cs" />
@@ -150,7 +153,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="asyncConnect.cs" />
+    <Compile Include="WorldConnection.cs" />
     <Page Include="OpenWorldWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -159,7 +162,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="PreferencesWindow.xaml">
+    <Page Include="OptionsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

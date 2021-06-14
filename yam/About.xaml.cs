@@ -17,10 +17,10 @@ namespace Yam
             InitializeComponent();
 
 
-            this.Title = $"About {AssemblyTitle}";//String.Format("About {0}", AssemblyTitle);
-            this.ProductName.Text = AssemblyProduct;
-            this.Version.Text = $"Version {AssemblyVersion}";
-            this.Copyright.Text = AssemblyCopyright + " " + AssemblyCompany;
+            Title = $"About {AssemblyTitle}";//String.Format("About {0}", AssemblyTitle);
+            ProductName.Text = AssemblyProduct;
+            Version.Text = $"Version {AssemblyVersion}";
+            Copyright.Text = AssemblyCopyright + " " + AssemblyCompany;
             //this.Description.Text = 
                
         }
@@ -107,12 +107,12 @@ namespace Yam
 
         private void OkButton_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         private void OK_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
     }
 }
