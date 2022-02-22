@@ -29,7 +29,11 @@ namespace Yam
             ///If there's already saved worlds, load them
             if (File.Exists(filePath))
             {
-                tempwc = WorldFile.Read(MainWindow.ConfigFilePath);
+                var info = new FileInfo(filePath);
+                if (info.Length > 0)
+                {
+                    tempwc = WorldFile.Read(MainWindow.ConfigFilePath);
+                }
             }
 
             IFormatter formatter = new BinaryFormatter();
